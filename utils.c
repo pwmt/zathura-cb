@@ -80,7 +80,13 @@ extract_archive_to_directory(const char* archive, const char* directory)
   }
 
   /* build command */
-  char* command = g_strdup_printf(archive_types[i].command, executeable, archive, directory);
+  char* quoted_archive   = g_shell_quote(archive);
+  char* quoted_directory = g_shell_quote(directory);
+
+  char* command = g_strdup_printf(archive_types[i].command, executeable, quoted_archive, quoted_directory);
+
+  g_free(quoted_archive);
+  g_free(quoted_directory);
   g_free(executeable);
 
   /* run command */
