@@ -90,7 +90,17 @@ extract_archive_to_directory(const char* archive, const char* directory)
   g_free(executeable);
 
   /* run command */
-  gboolean success = g_spawn_command_line_sync(command, NULL, NULL, NULL, NULL);
+  char* std_out = NULL;
+  char* std_err = NULL;
+  gboolean success = g_spawn_command_line_sync(command, &std_out, &std_err, NULL, NULL);
+
+  if (std_out != NULL) {
+    g_free(std_out);
+  }
+
+  if (std_err != NULL) {
+    g_free(std_err);
+  }
 
   g_free(command);
 
