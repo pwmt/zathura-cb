@@ -1,7 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
-#ifndef cb_H
-#define cb_H
+#ifndef CB_H
+#define CB_H
 
 #include <stdbool.h>
 
@@ -11,6 +11,7 @@
 
 #include <zathura/plugin-api.h>
 
+typedef struct cb_document_s cb_document_t;
 typedef struct cb_page_s cb_page_t;
 
 /**
@@ -28,7 +29,7 @@ zathura_error_t cb_document_open(zathura_document_t* document);
  * @param data Custom data
  * @return ZATHURA_ERROR_OK if no error occured
  */
-zathura_error_t cb_document_free(zathura_document_t* document, void* data);
+zathura_error_t cb_document_free(zathura_document_t* document, cb_document_t* cb_document);
 
 /**
  * Initializes a page
@@ -61,4 +62,4 @@ zathura_error_t cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     cairo_t* cairo, bool printing);
 #endif
 
-#endif // cb_H
+#endif // CB_H

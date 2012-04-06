@@ -1,8 +1,20 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 #include "cb.h"
+#include "utils.h"
+
+struct cb_document_s {
+  char* directory; /**< Path to the directory */
+};
+
+struct cb_page_s {
+  char* file; /**< File name */
+};
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -33,12 +45,45 @@ ZATHURA_PLUGIN_REGISTER(
 zathura_error_t
 cb_document_open(zathura_document_t* document)
 {
+  if (document == NULL) {
+    return ZATHURA_ERROR_INVALID_ARGUMENTS;
+  }
+
+  cb_document_t* cb_document = g_malloc0(sizeof(cb_document));
+
+  /* create temp directory */
+  cb_document->directory = g_dir_make_tmp("zathura-cb-XXXXXX", NULL);
+  if (cb_document->directory == NULL) {
+    cb_document_free(document, cb_document);
+    return ZATHURA_ERROR_UNKNOWN;
+  }
+
+  /* extract file */
+  const char* path = zathura_document_get_path(document);
+  char* mime_type  = get_mime_type(path);
+
+  fprintf(stderr, "mime_type: %s\n", mime_type);
+
+  zathura_document_set_number_of_pages(document, 1);
+  zathura_document_set_data(document, cb_document);
+
   return ZATHURA_ERROR_OK;
 }
 
 zathura_error_t
-cb_document_free(zathura_document_t* document, void* data)
+cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
 {
+  if (cb_document == NULL) {
+    return ZATHURA_ERROR_INVALID_ARGUMENTS;
+  }
+
+  /* remove temp directory */
+  if (cb_document->directory != NULL) {
+    g_remove(cb_document->directory);
+  }
+
+  g_free(cb_document);
+
   return ZATHURA_ERROR_OK;
 }
 
