@@ -25,11 +25,11 @@ static int compare_path(const char* str1, const char* str2);
 void
 register_functions(zathura_plugin_functions_t* functions)
 {
-  functions->document_open     = cb_document_open;
-  functions->document_free     = cb_document_free;
-  functions->page_init         = cb_page_init;
-  functions->page_clear        = cb_page_clear;
-  functions->page_render_cairo = cb_page_render_cairo;
+  functions->document_open     = (zathura_plugin_document_open_t) cb_document_open;
+  functions->document_free     = (zathura_plugin_document_free_t) cb_document_free;
+  functions->page_init         = (zathura_plugin_page_init_t) cb_page_init;
+  functions->page_clear        = (zathura_plugin_page_clear_t) cb_page_clear;
+  functions->page_render_cairo = (zathura_plugin_page_render_cairo_t) cb_page_render_cairo;
 }
 
 ZATHURA_PLUGIN_REGISTER(
