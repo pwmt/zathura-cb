@@ -21,6 +21,7 @@ struct cb_page_s {
 };
 
 static int compare_path(const char* str1, const char* str2);
+static zathura_error_t read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -34,7 +35,7 @@ register_functions(zathura_plugin_functions_t* functions)
 
 ZATHURA_PLUGIN_REGISTER(
   "cb",
-  0, 1, 0,
+  0, 2, 0,
   register_functions,
   ZATHURA_PLUGIN_MIMETYPES({
     "application/x-cbr",
@@ -96,37 +97,10 @@ cb_document_open(zathura_document_t* document)
     goto error_free;
   }
 
-  GDir* dir = g_dir_open(cb_document->directory, 0, NULL);
-  if (dir == NULL) {
-    goto error_free;
-  }
-
-  char* name = NULL;
-  while ((name = (char*) g_dir_read_name(dir)) != NULL) {
-    char* path = g_build_filename(cb_document->directory, name, NULL);
-    if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == 0) {
-      g_free(path);
-      continue;
-    }
-
-    const char* extension = file_get_extension(path);
-
-    bool supported = false;
-    GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
-      if (g_strcmp0(extension, ext) == 0) {
-        girara_list_append(cb_document->page_paths, path);
-        supported = true;
-        break;
-      }
-    GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
-
-    if (supported == false) {
-      g_free(path);
-    }
-  }
+  /* read files recursively */
+  read_archive(cb_document, cb_document->directory, supported_extensions);
 
   girara_list_free(supported_extensions);
-  g_dir_close(dir);
 
   /* set document information */
   zathura_document_set_number_of_pages(document, girara_list_size(cb_document->page_paths));
@@ -139,6 +113,48 @@ error_free:
   cb_document_free(document, cb_document);
 
   return ZATHURA_ERROR_UNKNOWN;
+}
+
+static zathura_error_t
+read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
+{
+  GDir* dir = g_dir_open(directory, 0, NULL);
+  if (dir == NULL) {
+    return ZATHURA_ERROR_UNKNOWN;
+  }
+
+  char* name = NULL;
+  while ((name = (char*) g_dir_read_name(dir)) != NULL) {
+    char* path = g_build_filename(directory, name, NULL);
+
+    if (g_file_test(path, G_FILE_TEST_IS_SYMLINK) == TRUE) {
+      g_free(path);
+    } else if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == TRUE) {
+      const char* extension = file_get_extension(path);
+
+      bool supported = false;
+      GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
+        if (g_strcmp0(extension, ext) == 0) {
+          girara_list_append(cb_document->page_paths, path);
+          supported = true;
+          break;
+        }
+      GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
+
+      if (supported == false) {
+        g_free(path);
+      }
+    } else if (g_file_test(path, G_FILE_TEST_IS_DIR) == TRUE) {
+      read_archive(cb_document, path, supported_extensions);
+      g_free(path);
+    } else {
+      g_free(path);
+    }
+  }
+
+  g_dir_close(dir);
+
+  return ZATHURA_ERROR_OK;
 }
 
 zathura_error_t
