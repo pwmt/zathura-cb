@@ -202,14 +202,15 @@ cb_page_init(zathura_page_t* page)
   cb_page->file = girara_list_nth(cb_document->page_paths, zathura_page_get_index(page));
 
   /* extract dimensions */
-  cb_page->pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
-  if (cb_page->pixbuf == NULL) {
+  int width, height;
+  GdkPixbufFormat* format = gdk_pixbuf_get_file_info(cb_page->file, &width, &height);
+  if (format == NULL) { /* format not recognized */
     g_free(cb_page);
     return ZATHURA_ERROR_UNKNOWN;
   }
 
-  zathura_page_set_width(page, gdk_pixbuf_get_width(cb_page->pixbuf));
-  zathura_page_set_height(page, gdk_pixbuf_get_height(cb_page->pixbuf));
+  zathura_page_set_width(page, width);
+  zathura_page_set_height(page, height);
   zathura_page_set_data(page, cb_page);
 
   return ZATHURA_ERROR_OK;
@@ -236,8 +237,15 @@ zathura_error_t
 cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     cairo_t* cairo, bool printing)
 {
-  if (page == NULL || cb_page == NULL || cb_page->pixbuf == NULL || cairo == NULL) {
+  if (page == NULL || cb_page == NULL || cairo == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
+  }
+
+  if (cb_page->pixbuf == NULL) {
+    cb_page->pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
+    if (cb_page->pixbuf == NULL) {
+      return ZATHURA_ERROR_UNKNOWN;
+    }
   }
 
   gdk_cairo_set_source_pixbuf(cairo, cb_page->pixbuf, 0, 0);
