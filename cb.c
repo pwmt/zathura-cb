@@ -186,17 +186,15 @@ cb_page_init(zathura_page_t* page)
   cb_page->file = girara_list_nth(cb_document->page_paths, zathura_page_get_index(page));
 
   /* extract dimensions */
-  GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
-  if (pixbuf == NULL) {
+  cb_page->pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
+  if (cb_page->pixbuf == NULL) {
     g_free(cb_page);
     return ZATHURA_ERROR_UNKNOWN;
   }
 
-  zathura_page_set_width(page, gdk_pixbuf_get_width(pixbuf));
-  zathura_page_set_height(page, gdk_pixbuf_get_height(pixbuf));
+  zathura_page_set_width(page, gdk_pixbuf_get_width(cb_page->pixbuf));
+  zathura_page_set_height(page, gdk_pixbuf_get_height(cb_page->pixbuf));
   zathura_page_set_data(page, cb_page);
-
-  g_object_unref(pixbuf);
 
   return ZATHURA_ERROR_OK;
 }
@@ -206,6 +204,10 @@ cb_page_clear(zathura_page_t* page, cb_page_t* cb_page)
 {
   if (cb_page == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
+  }
+
+  if (cb_page->pixbuf != NULL) {
+    g_object_unref(cb_page->pixbuf);
   }
 
   g_free(cb_page);
@@ -218,19 +220,12 @@ zathura_error_t
 cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     cairo_t* cairo, bool printing)
 {
-  if (page == NULL || cb_page == NULL || cairo == NULL) {
+  if (page == NULL || cb_page == NULL || cb_page->pixbuf == NULL || cairo == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
 
-  GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
-  if (pixbuf == NULL) {
-    return ZATHURA_ERROR_UNKNOWN;
-  }
-
-  gdk_cairo_set_source_pixbuf(cairo, pixbuf, 0, 0);
+  gdk_cairo_set_source_pixbuf(cairo, cb_page->pixbuf, 0, 0);
   cairo_paint(cairo);
-
-  g_object_unref(pixbuf);
 
   return ZATHURA_ERROR_OK;
 }
