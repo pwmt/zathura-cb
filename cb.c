@@ -21,7 +21,7 @@ struct cb_page_s {
 };
 
 static int compare_path(const char* str1, const char* str2);
-static zathura_error_t read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+static int read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -98,7 +98,9 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  read_archive(cb_document, cb_document->directory, supported_extensions);
+  if (!read_directory(cb_document, cb_document->directory, supported_extensions)) {
+    goto error_free;
+  }
 
   girara_list_free(supported_extensions);
 
@@ -115,12 +117,12 @@ error_free:
   return ZATHURA_ERROR_UNKNOWN;
 }
 
-static zathura_error_t
-read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
+static int
+read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
 {
   GDir* dir = g_dir_open(directory, 0, NULL);
   if (dir == NULL) {
-    return ZATHURA_ERROR_UNKNOWN;
+    return -1;
   }
 
   char* name = NULL;
@@ -145,7 +147,7 @@ read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* s
         g_free(path);
       }
     } else if (g_file_test(path, G_FILE_TEST_IS_DIR) == TRUE) {
-      read_archive(cb_document, path, supported_extensions);
+      read_directory(cb_document, path, supported_extensions);
       g_free(path);
     } else {
       g_free(path);
@@ -154,7 +156,7 @@ read_archive(cb_document_t* cb_document, const char* directory, girara_list_t* s
 
   g_dir_close(dir);
 
-  return ZATHURA_ERROR_OK;
+  return 1;
 }
 
 zathura_error_t
