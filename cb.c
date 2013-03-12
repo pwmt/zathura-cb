@@ -22,6 +22,7 @@ struct cb_page_s {
 
 static int compare_path(const char* str1, const char* str2);
 static int read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+static int remove_directory(const char* directory);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -168,7 +169,7 @@ cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
 
   /* remove temp directory */
   if (cb_document->directory != NULL) {
-    g_remove(cb_document->directory);
+    remove_directory(cb_document->directory);
   }
 
   /* remove page list */
@@ -183,6 +184,33 @@ cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
   g_free(cb_document);
 
   return ZATHURA_ERROR_OK;
+}
+
+static int
+remove_directory(const char* directory)
+{
+  GDir* dir = g_dir_open(directory, 0, NULL);
+  if (dir == NULL) {
+    return -1;
+  }
+
+  char* name = NULL;
+  while ((name = (char*) g_dir_read_name(dir)) != NULL) {
+    char* path = g_build_filename(directory, name, NULL);
+
+    if (g_file_test(path, G_FILE_TEST_IS_DIR) == TRUE) {
+      remove_directory(path);
+    } else {
+      g_remove(path);
+    }
+
+    g_free(path);
+  }
+
+  g_dir_close(dir);
+  g_remove(directory);
+
+  return 1;
 }
 
 zathura_error_t
