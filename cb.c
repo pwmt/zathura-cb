@@ -21,8 +21,8 @@ struct cb_page_s {
 };
 
 static int compare_path(const char* str1, const char* str2);
-static int read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
-static int remove_directory(const char* directory);
+static bool read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+static void remove_directory(const char* directory);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -99,7 +99,7 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  if (!read_directory(cb_document, cb_document->directory, supported_extensions)) {
+  if (read_directory(cb_document, cb_document->directory, supported_extensions) == false) {
     goto error_free;
   }
 
@@ -118,12 +118,12 @@ error_free:
   return ZATHURA_ERROR_UNKNOWN;
 }
 
-static int
+static bool
 read_directory(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
 {
   GDir* dir = g_dir_open(directory, 0, NULL);
   if (dir == NULL) {
-    return -1;
+    return false;
   }
 
   char* name = NULL;
@@ -157,7 +157,7 @@ read_directory(cb_document_t* cb_document, const char* directory, girara_list_t*
 
   g_dir_close(dir);
 
-  return 1;
+  return true;
 }
 
 zathura_error_t
@@ -170,6 +170,7 @@ cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
   /* remove temp directory */
   if (cb_document->directory != NULL) {
     remove_directory(cb_document->directory);
+    g_free(cb_document->directory);
   }
 
   /* remove page list */
@@ -177,21 +178,17 @@ cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
     girara_list_free(cb_document->page_paths);
   }
 
-  if (cb_document->directory != NULL) {
-    g_free(cb_document->directory);
-  }
-
   g_free(cb_document);
 
   return ZATHURA_ERROR_OK;
 }
 
-static int
+static void
 remove_directory(const char* directory)
 {
   GDir* dir = g_dir_open(directory, 0, NULL);
   if (dir == NULL) {
-    return -1;
+    return;
   }
 
   char* name = NULL;
@@ -209,8 +206,6 @@ remove_directory(const char* directory)
 
   g_dir_close(dir);
   g_remove(directory);
-
-  return 1;
 }
 
 zathura_error_t
