@@ -6,14 +6,6 @@
 #include <stdbool.h>
 
 /**
- * Returns the mime type of the given file
- *
- * @param path The path to the file
- * @return The mime type or NULL
- */
-char* get_mime_type(const char* path);
-
-/**
  * Extracts an archive to a directory
  *
  * @param archive The archive

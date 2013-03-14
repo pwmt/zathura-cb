@@ -14,13 +14,15 @@ LIBDIR ?= ${PREFIX}/lib
 CAIRO_INC ?= $(shell pkg-config --cflags cairo)
 CAIRO_LIB ?= $(shell pkg-config --libs cairo)
 
+LIBARCHIVE_LIB ?= $(shell pkg-config --libs libarchive)
+
 GLIB_INC ?= $(shell pkg-config --cflags glib-2.0)
 GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0)
 
 ZATHURA_INC ?= $(shell pkg-config --cflags zathura)
 
 INCS = ${GIRARA_INC} ${GLIB_INC} ${ZATHURA_INC}
-LIBS = ${GIRARA_LIB} ${GLIB_LIB} 
+LIBS = ${GIRARA_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
 
 # plugindir
 PLUGINDIR ?= $(shell pkg-config --variable=plugindir zathura)
