@@ -17,7 +17,6 @@ struct cb_document_s {
 
 struct cb_page_s {
   char* file; /**< File name */
-  GdkPixbuf* pixbuf; /**< Pixbuffer */
 };
 
 static int compare_path(const char* str1, const char* str2);
@@ -248,10 +247,6 @@ cb_page_clear(zathura_page_t* page, cb_page_t* cb_page)
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
 
-  if (cb_page->pixbuf != NULL) {
-    g_object_unref(cb_page->pixbuf);
-  }
-
   g_free(cb_page);
 
   return ZATHURA_ERROR_OK;
@@ -266,15 +261,14 @@ cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
 
-  if (cb_page->pixbuf == NULL) {
-    cb_page->pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
-    if (cb_page->pixbuf == NULL) {
-      return ZATHURA_ERROR_UNKNOWN;
-    }
+  GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(cb_page->file, NULL);
+  if (pixbuf == NULL) {
+    return ZATHURA_ERROR_UNKNOWN;
   }
 
-  gdk_cairo_set_source_pixbuf(cairo, cb_page->pixbuf, 0, 0);
+  gdk_cairo_set_source_pixbuf(cairo, pixbuf, 0, 0);
   cairo_paint(cairo);
+  g_object_unref(pixbuf);
 
   return ZATHURA_ERROR_OK;
 }
