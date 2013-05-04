@@ -13,9 +13,7 @@
 
 #define LIBARCHIVE_BUFFER_SIZE 8192
 
-
 #include "cb.h"
-#include "utils.h"
 
 struct cb_document_s {
   char* directory; /**< Path to the directory */
@@ -29,6 +27,7 @@ struct cb_page_s {
 static int compare_path(const char* str1, const char* str2);
 static bool read_directory(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
+static const char* file_get_extension(const char* path);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -44,7 +43,7 @@ register_functions(zathura_plugin_functions_t* functions)
 
 ZATHURA_PLUGIN_REGISTER(
   "cb",
-  0, 2, 0,
+  VERSION_MAJOR, VERSION_MINOR, VERSION_REV,
   register_functions,
   ZATHURA_PLUGIN_MIMETYPES({
     "application/x-cbr",
@@ -341,4 +340,27 @@ load_pixbuf_from_archive(const char* archive, const char* file)
   archive_read_close(a);
   archive_read_free(a);
   return NULL;
+}
+
+static const char*
+file_get_extension(const char* path)
+{
+  if (path == NULL) {
+    return NULL;
+  }
+
+  unsigned int i = strlen(path);
+  for (; i > 0; i--) {
+    if (*(path + i) != '.') {
+      continue;
+    } else {
+      break;
+    }
+  }
+
+  if (i != 0) {
+    return NULL;
+  }
+
+  return path + i + 1;
 }

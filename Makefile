@@ -5,8 +5,8 @@ include common.mk
 
 PROJECT  = zathura-cb
 PLUGIN   = cb
-SOURCE   = $(shell find . -iname "*.c")
-HEADER   = $(shell find . -iname "*.h")
+SOURCE   = $(wildcard *.c)
+HEADER   = $(wildcard *.h)
 OBJECTS  = ${SOURCE:.c=.o}
 DOBJECTS = ${SOURCE:.c=.do}
 
@@ -15,6 +15,10 @@ CPPFLAGS += -DHAVE_CAIRO
 INCS += $(CAIRO_INC)
 LIBS += $(CAIRO_LIB)
 endif
+
+CPPFLAGS += "-DVERSION_MAJOR=${VERSION_MAJOR}"
+CPPFLAGS += "-DVERSION_MINOR=${VERSION_MINOR}"
+CPPFLAGS += "-DVERSION_REV=${VERSION_REV}"
 
 all: options ${PLUGIN}.so
 
