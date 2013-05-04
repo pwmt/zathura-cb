@@ -26,7 +26,7 @@ struct cb_page_s {
 static int compare_path(const char* str1, const char* str2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
-static const char* file_get_extension(const char* path);
+static const char* get_extension(const char* path);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -145,7 +145,7 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
     }
 
     const char* path = archive_entry_pathname(entry);
-    const char* extension = file_get_extension(path);
+    const char* extension = get_extension(path);
 
     GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
       if (g_strcmp0(extension, ext) == 0) {
@@ -342,13 +342,13 @@ load_pixbuf_from_archive(const char* archive, const char* file)
 }
 
 static const char*
-file_get_extension(const char* path)
+get_extension(const char* path)
 {
   if (path == NULL) {
     return NULL;
   }
 
-  unsigned int i = strlen(path);
+  size_t i = strlen(path);
   for (; i > 0; i--) {
     if (*(path + i) != '.') {
       continue;
@@ -357,7 +357,7 @@ file_get_extension(const char* path)
     }
   }
 
-  if (i != 0) {
+  if (i == 0) {
     return NULL;
   }
 
