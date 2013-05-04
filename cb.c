@@ -16,7 +16,6 @@
 #include "cb.h"
 
 struct cb_document_s {
-  char* directory; /**< Path to the directory */
   girara_list_t* page_paths; /**< List of page paths */
 };
 
@@ -25,7 +24,7 @@ struct cb_page_s {
 };
 
 static int compare_path(const char* str1, const char* str2);
-static bool read_directory(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
+static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
 static const char* file_get_extension(const char* path);
 
@@ -96,7 +95,7 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  if (read_directory(cb_document, path, supported_extensions) == false) {
+  if (read_archive(cb_document, path, supported_extensions) == false) {
     goto error_free;
   }
 
@@ -116,7 +115,7 @@ error_free:
 }
 
 static bool
-read_directory(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions)
+read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions)
 {
   struct archive* a = archive_read_new();
   if (a == NULL) {
