@@ -3,108 +3,102 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <string.h>
-
 #include <stdio.h>
+
+#include <archive.h>
+#include <archive_entry.h>
 
 #include "utils.h"
 
 #define LENGTH(x) (sizeof(x)/sizeof((x)[0]))
+#define LIBARCHIVE_BUFFER_SIZE 8192
 
-typedef struct archive_type_s {
-  const char* mime_type;
-  const char* application;
-  const char* command;
-} archive_type_t;
-
-static const archive_type_t archive_types[] = {
-  { "application/x-cbr",           "unrar", "%s e %s %s" },
-  { "application/x-rar",           "unrar", "%s e %s %s" },
-  { "application/x-cbz",           "unzip", "%s %s -d %s" },
-  { "application/zip",             "unzip", "%s %s -d %s" },
-  { "application/x-cb7",           "7z",    "%s e %s -o %s" },
-  { "application/x-7z-compressed", "7z",    "%s e %s -o %s" },
-  { "application/x-cbt",           "tar"    "%s -x -f %s -C %s" },
-  { "application/x-tar",           "tar",   "%s -x -f %s -C %s" }
-};
-
-char*
-get_mime_type(const char* path)
+static int
+count_archive_files(const char *archive_path)
 {
-  char* uri            = g_filename_to_uri(path, NULL, NULL);
-  GFile* file          = g_file_new_for_uri(uri);
-  GFileInfo* file_info = g_file_query_info(file, G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE, 0, NULL, NULL);
+    int r, file_fount;
+    struct archive *a;
+    struct archive_entry *entry;
 
-  g_free(uri);
-  g_object_unref(file);
+    if((a = archive_read_new()) == NULL) {
+        printf("Error: an not open archive!\n");
+        return -1;
+    }
 
-  if (file_info == NULL) {
-    return NULL;
-  }
+    archive_read_support_filter_all(a);
+    archive_read_support_format_all(a);
 
-  const char* content_type = g_file_info_get_content_type(file_info);
-  char* mime_type          = NULL;
+    r = archive_read_open_filename(a, archive_path, (size_t) LIBARCHIVE_BUFFER_SIZE);
+    if (r != ARCHIVE_OK) {
+        printf("Error: %s\n", archive_error_string(a));
+        goto cleanup;
+    }
 
-  if (content_type != NULL) {
-    mime_type = g_content_type_get_mime_type(content_type);
-  }
+    while(archive_read_next_header(a, &entry) == ARCHIVE_OK);
+    file_fount = archive_file_count(a);
 
-  g_object_unref(file_info);
+    r = archive_read_free(a);
+    if (r != ARCHIVE_OK) {
+        printf("Error: %s\n", archive_error_string(a));
+        return -1;
+    }
 
-  return mime_type;
+    return file_fount;
+
+cleanup:
+    printf("Error: %s\n", archive_error_string(a));
+    archive_read_free(a);
+    return -1;
 }
 
 bool
-extract_archive_to_directory(const char* archive, const char* directory)
+extract_archive_to_directory(const char* archive_path, const char* directory)
 {
-  if (archive == NULL || directory == NULL) {
+  if (archive_path == NULL || directory == NULL) {
     return false;
   }
 
-  /* search supported archive types */
-  char* mime_type   = get_mime_type(archive);
-  char* executeable = NULL;
+  int r, file_count;
+  struct archive *a;
+  struct archive_entry *entry;
+  file_count = count_archive_files(archive_path);
 
-  unsigned int i = 0;
-  for (i = 0; i < LENGTH(archive_types); i++) {
-    if (strcmp(mime_type, archive_types[i].mime_type) == 0) {
-      executeable = g_find_program_in_path(archive_types[i].application);
-      if (executeable != NULL) {
-        break;
-      }
+  if((a = archive_read_new()) == NULL) {
+    printf("Error: an not open archive!\n");
+    return false;
+  }
+
+  archive_read_support_filter_all(a);
+  archive_read_support_format_all(a);
+
+  r = archive_read_open_filename(a, archive_path, (size_t) LIBARCHIVE_BUFFER_SIZE);
+  if (r != ARCHIVE_OK) {
+    printf("Error: %s\n", archive_error_string(a));
+    goto cleanup;
+  }
+
+  chdir(directory);  // TODO: Error reporting
+
+  while(archive_read_next_header(a, &entry) == ARCHIVE_OK) {
+    // (*set_progress)((int) (archive_file_count(a) / (file_count / 100.0)));
+    if (archive_read_extract(a, entry, 0) != ARCHIVE_OK) {
+      printf("Error: %s\n", archive_error_string(a));
+      goto cleanup;
     }
   }
 
-  /* there is no way to extract the archive */
-  if (executeable == NULL) {
+  r = archive_read_free(a);
+  if (r != ARCHIVE_OK) {
+    printf("Error: %s\n", archive_error_string(a));
     return false;
   }
 
-  /* build command */
-  char* quoted_archive   = g_shell_quote(archive);
-  char* quoted_directory = g_shell_quote(directory);
+  return true;
 
-  char* command = g_strdup_printf(archive_types[i].command, executeable, quoted_archive, quoted_directory);
-
-  g_free(quoted_archive);
-  g_free(quoted_directory);
-  g_free(executeable);
-
-  /* run command */
-  char* std_out = NULL;
-  char* std_err = NULL;
-  gboolean success = g_spawn_command_line_sync(command, &std_out, &std_err, NULL, NULL);
-
-  if (std_out != NULL) {
-    g_free(std_out);
-  }
-
-  if (std_err != NULL) {
-    g_free(std_err);
-  }
-
-  g_free(command);
-
-  return (success == TRUE) ? true : false;
+cleanup:
+  printf("Error: %s\n", archive_error_string(a));
+  archive_read_free(a);
+  return false;
 }
 
 const char*
