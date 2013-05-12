@@ -1,26 +1,37 @@
 # See LICENSE file for license and copyright information
 
-VERSION = 0.1.0
+VERSION_MAJOR = 0
+VERSION_MINOR = 1
+VERSION_REV = 1
+VERSION = ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
 
 # minimum required zathura version
-ZATHURA_MIN_VERSION = 0.1.1
+ZATHURA_MIN_VERSION = 0.2.0
 ZATHURA_VERSION_CHECK ?= $(shell pkg-config --atleast-version=$(ZATHURA_MIN_VERSION) zathura; echo $$?)
+ZATHURA_GTK_VERSION ?= $(shell pkg-config --variable=GTK_VERSION zathura)
 
 # paths
 PREFIX ?= /usr
 LIBDIR ?= ${PREFIX}/lib
+DESKTOPPREFIX ?= ${PREFIX}/share/applications
 
 # libs
 CAIRO_INC ?= $(shell pkg-config --cflags cairo)
 CAIRO_LIB ?= $(shell pkg-config --libs cairo)
 
+LIBARCHIVE_INC ?= $(shell pkg-config --cflags libarchive)
+LIBARCHIVE_LIB ?= $(shell pkg-config --libs libarchive)
+
 GLIB_INC ?= $(shell pkg-config --cflags glib-2.0)
 GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0)
 
+GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk${ZATHURA_GTK_VERSION})
+GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk${ZATHURA_GTK_VERSION})
+
 ZATHURA_INC ?= $(shell pkg-config --cflags zathura)
 
-INCS = ${GIRARA_INC} ${GLIB_INC} ${ZATHURA_INC}
-LIBS = ${GIRARA_LIB} ${GLIB_LIB} 
+INCS = ${GIRARA_INC} ${GLIB_INC} ${ZATHURA_INC} ${LIBARCHIVE_INC}
+LIBS = ${GIRARA_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
 
 # plugindir
 PLUGINDIR ?= $(shell pkg-config --variable=plugindir zathura)
