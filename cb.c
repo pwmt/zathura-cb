@@ -310,6 +310,9 @@ load_pixbuf_from_archive(const char* archive, const char* file)
         return NULL;
       }
 
+      if (!size)
+        continue;
+
       void* tmp = g_malloc0(size);
       if (tmp == NULL) {
         archive_read_close(a);
