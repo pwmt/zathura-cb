@@ -16,17 +16,20 @@
 #include "cb.h"
 
 struct cb_document_s {
-  girara_list_t* page_paths; /**< List of page paths */
+  girara_list_t* pages; /**< List of page paths */
 };
 
 struct cb_page_s {
   char* file; /**< File name */
+  int width;
+  int height;
 };
 
-static int compare_path(const char* str1, const char* str2);
+static int compare_pages(const cb_page_t* page1, const cb_page_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
 static const char* get_extension(const char* path);
+static void cb_page_free(cb_page_t* page);
 
 void
 register_functions(zathura_plugin_functions_t* functions)
@@ -88,9 +91,9 @@ cb_document_open(zathura_document_t* document)
   g_slist_free(formats);
 
   /* create list of supported files (pages) */
-  cb_document->page_paths = girara_sorted_list_new2((girara_compare_function_t)
-      compare_path, (girara_free_function_t) g_free);
-  if (cb_document->page_paths == NULL) {
+  cb_document->pages = girara_sorted_list_new2((girara_compare_function_t)
+      compare_pages, (girara_free_function_t) cb_page_free);
+  if (cb_document->pages == NULL) {
     goto error_free;
   }
 
@@ -102,7 +105,7 @@ cb_document_open(zathura_document_t* document)
   girara_list_free(supported_extensions);
 
   /* set document information */
-  zathura_document_set_number_of_pages(document, girara_list_size(cb_document->page_paths));
+  zathura_document_set_number_of_pages(document, girara_list_size(cb_document->pages));
   zathura_document_set_data(document, cb_document);
 
   return ZATHURA_ERROR_OK;
@@ -112,6 +115,26 @@ error_free:
   cb_document_free(document, cb_document);
 
   return ZATHURA_ERROR_UNKNOWN;
+}
+
+static void
+cb_page_free(cb_page_t* page)
+{
+  if (page->file != NULL)
+    g_free(page->file);
+
+  g_free(page);
+}
+
+static void
+get_pixbuf_size(GdkPixbufLoader* loader, int width, int height, gpointer data)
+{
+  cb_page_t* cb_page = (cb_page_t*)data;
+
+  cb_page->width = width;
+  cb_page->height = height;
+
+  gdk_pixbuf_loader_set_size(loader, 0, 0);
 }
 
 static bool
@@ -149,7 +172,32 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
 
     GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
       if (g_strcmp0(extension, ext) == 0) {
-        girara_list_append(cb_document->page_paths, g_strdup(path));
+        cb_page_t* cb_page = g_malloc0(sizeof(cb_page_t));
+        cb_page->file = g_strdup(path);
+
+        GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+        g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), cb_page);
+
+        size_t size = 0;
+        const void* buf = NULL;
+        off_t offset = 0;
+        while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
+          if (size <= 0)
+            continue;
+
+          if (!gdk_pixbuf_loader_write(loader, buf, size, NULL))
+            break;
+
+          if (cb_page->width > 0 || cb_page->height > 0)
+            break;
+        }
+
+        gdk_pixbuf_loader_close(loader, NULL);
+        g_object_unref(loader);
+
+        if (cb_page->width > 0 && cb_page->height > 0)
+          girara_list_append(cb_document->pages, cb_page);
+
         break;
       }
     GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
@@ -168,8 +216,8 @@ cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
   }
 
   /* remove page list */
-  if (cb_document->page_paths != NULL) {
-    girara_list_free(cb_document->page_paths);
+  if (cb_document->pages != NULL) {
+    girara_list_free(cb_document->pages);
   }
 
   g_free(cb_document);
@@ -191,20 +239,11 @@ cb_page_init(zathura_page_t* page)
     return ZATHURA_ERROR_UNKNOWN;
   }
 
-  cb_page_t* cb_page = g_malloc0(sizeof(cb_page_t));
-  cb_page->file = girara_list_nth(cb_document->page_paths, zathura_page_get_index(page));
+  cb_page_t* cb_page = girara_list_nth(cb_document->pages, zathura_page_get_index(page));
 
-  GdkPixbuf* pixbuf = load_pixbuf_from_archive(zathura_document_get_path(document), cb_page->file);
-  if (pixbuf == NULL) {
-    g_free(cb_page);
-    return ZATHURA_ERROR_UNKNOWN;
-  }
-
-  /* extract dimensions */
-  zathura_page_set_width(page, gdk_pixbuf_get_width(pixbuf));
-  zathura_page_set_height(page, gdk_pixbuf_get_height(pixbuf));
+  zathura_page_set_width(page, cb_page->width);
+  zathura_page_set_height(page, cb_page->height);
   zathura_page_set_data(page, cb_page);
-  g_object_unref(pixbuf);
 
   return ZATHURA_ERROR_OK;
 }
@@ -212,12 +251,6 @@ cb_page_init(zathura_page_t* page)
 zathura_error_t
 cb_page_clear(zathura_page_t* page, cb_page_t* cb_page)
 {
-  if (cb_page == NULL) {
-    return ZATHURA_ERROR_INVALID_ARGUMENTS;
-  }
-
-  g_free(cb_page);
-
   return ZATHURA_ERROR_OK;
 }
 
@@ -258,6 +291,12 @@ compare_path(const char* str1, const char* str2)
   g_free(ustr2);
 
   return result;
+}
+
+static int
+compare_pages(const cb_page_t* page1, const cb_page_t* page2)
+{
+  return compare_path(page1->file, page2->file);
 }
 
 static GdkPixbuf*
