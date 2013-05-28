@@ -288,8 +288,9 @@ load_pixbuf_from_archive(const char* archive, const char* file)
     }
 
     const char* path = archive_entry_pathname(entry);
-    if (compare_path(path, file) != 0)
+    if (compare_path(path, file) != 0) {
       continue;
+    }
 
     GInputStream* is = g_memory_input_stream_new();
     if (is == NULL) {
@@ -310,8 +311,9 @@ load_pixbuf_from_archive(const char* archive, const char* file)
         return NULL;
       }
 
-      if (size == 0);
+      if (size == 0) {
         continue;
+      }
 
       void* tmp = g_malloc0(size);
       if (tmp == NULL) {
