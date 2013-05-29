@@ -118,6 +118,7 @@ cb_document_open(zathura_document_t* document)
 
 error_free:
 
+  girara_list_free(supported_extensions);
   cb_document_free(document, cb_document);
 
   return ZATHURA_ERROR_UNKNOWN;
