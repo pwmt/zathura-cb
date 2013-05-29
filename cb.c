@@ -16,17 +16,19 @@
 #include "cb.h"
 
 struct cb_document_s {
-  girara_list_t* pages; /**< List of page paths */
+  girara_list_t* pages; /**< List of metadata structs */
 };
 
 struct cb_page_s {
-  char* file;
+  char* file; /**< Image associated to the page */
 };
 
+/** Image meta-data read during the document initialization
+ */
 typedef struct cb_document_page_meta_s {
-  char* file; /**< File name */
-  int width;
-  int height;
+  char* file; /**< Image file */
+  int width; /**< Image width */
+  int height; /**< Image height */
 } cb_document_page_meta_t;
 
 static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
