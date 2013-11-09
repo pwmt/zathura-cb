@@ -1,0 +1,22 @@
+zathura-cb
+=================
+The zathura-b plugin adds comic book support to zathura.
+
+Requirements
+------------
+zathura (>= 0.2.0)
+libarchive
+girara
+cairo
+
+Installation
+------------
+To build and install the plugin:
+
+  make install
+
+Uninstall:
+----------
+To delete the plugin from your system, just type:
+
+  make uninstall
