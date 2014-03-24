@@ -7,6 +7,7 @@ register_functions(zathura_plugin_functions_t* functions)
 {
   functions->document_open     = (zathura_plugin_document_open_t) cb_document_open;
   functions->document_free     = (zathura_plugin_document_free_t) cb_document_free;
+  functions->document_index_generate  = (zathura_plugin_document_index_generate_t) cb_document_index_generate;
   functions->page_init         = (zathura_plugin_page_init_t) cb_page_init;
   functions->page_clear        = (zathura_plugin_page_clear_t) cb_page_clear;
 #ifdef HAVE_CAIRO
