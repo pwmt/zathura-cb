@@ -22,8 +22,8 @@ CAIRO_LIB ?= $(shell pkg-config --libs cairo)
 LIBARCHIVE_INC ?= $(shell pkg-config --cflags libarchive)
 LIBARCHIVE_LIB ?= $(shell pkg-config --libs libarchive)
 
-GLIB_INC ?= $(shell pkg-config --cflags glib-2.0)
-GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0)
+GLIB_INC ?= $(shell pkg-config --cflags glib-2.0 gio-2.0)
+GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0 gio-2.0)
 
 GDK_INC ?= $(shell pkg-config --cflags gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
 GDK_LIB ?= $(shell pkg-config --libs   gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
