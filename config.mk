@@ -25,16 +25,16 @@ LIBARCHIVE_LIB ?= $(shell pkg-config --libs libarchive)
 GLIB_INC ?= $(shell pkg-config --cflags glib-2.0)
 GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0)
 
-GDK_PIXBUF_INC ?= $(shell pkg-config --cflags gdk-pixbuf-2.0)
-GDK_PIXBUF_LIB ?= $(shell pkg-config --libs   gdk-pixbuf-2.0)
+GDK_INC ?= $(shell pkg-config --cflags gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
+GDK_LIB ?= $(shell pkg-config --libs   gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
 
 GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk${ZATHURA_GTK_VERSION})
 GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk${ZATHURA_GTK_VERSION})
 
 ZATHURA_INC ?= $(shell pkg-config --cflags zathura)
 
-INCS = ${GIRARA_INC} ${GDK_PIXBUF_INC} ${GLIB_INC} ${ZATHURA_INC} ${LIBARCHIVE_INC}
-LIBS = ${GIRARA_LIB} ${GDK_PIXBUF_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
+INCS = ${GIRARA_INC} ${GDK_INC} ${GLIB_INC} ${ZATHURA_INC} ${LIBARCHIVE_INC}
+LIBS = ${GIRARA_LIB} ${GDK_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
 
 # plugindir
 PLUGINDIR ?= $(shell pkg-config --variable=plugindir zathura)
