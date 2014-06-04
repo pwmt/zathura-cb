@@ -16,7 +16,7 @@
 
 static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
-static const char* get_extension(const char* path);
+static char* get_extension(const char* path);
 static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
 
 zathura_error_t
@@ -150,7 +150,11 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
     }
 
     const char* path = archive_entry_pathname(entry);
-    const char* extension = get_extension(path);
+    char* extension = get_extension(path);
+
+    if (extension == NULL) {
+      continue;
+    }
 
     GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
       if (g_strcmp0(extension, ext) == 0) {
@@ -189,6 +193,8 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
         break;
       }
     GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
+
+    g_free(extension);
   }
 
   archive_read_close(a);
@@ -202,7 +208,7 @@ compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_
   return compare_path(page1->file, page2->file);
 }
 
-static const char*
+static char*
 get_extension(const char* path)
 {
   if (path == NULL) {
@@ -214,5 +220,5 @@ get_extension(const char* path)
     return NULL;
   }
 
-  return res + 1;
+  return g_ascii_strdown(res + 1, -1);
 }
