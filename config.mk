@@ -2,7 +2,7 @@
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_REV = 2
+VERSION_REV = 3
 VERSION = ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
 
 # minimum required zathura version
@@ -22,16 +22,19 @@ CAIRO_LIB ?= $(shell pkg-config --libs cairo)
 LIBARCHIVE_INC ?= $(shell pkg-config --cflags libarchive)
 LIBARCHIVE_LIB ?= $(shell pkg-config --libs libarchive)
 
-GLIB_INC ?= $(shell pkg-config --cflags glib-2.0)
-GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0)
+GLIB_INC ?= $(shell pkg-config --cflags glib-2.0 gio-2.0)
+GLIB_LIB ?= $(shell pkg-config --libs   glib-2.0 gio-2.0)
+
+GDK_INC ?= $(shell pkg-config --cflags gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
+GDK_LIB ?= $(shell pkg-config --libs   gdk-pixbuf-2.0 gdk-${ZATHURA_GTK_VERSION}.0)
 
 GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk${ZATHURA_GTK_VERSION})
 GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk${ZATHURA_GTK_VERSION})
 
 ZATHURA_INC ?= $(shell pkg-config --cflags zathura)
 
-INCS = ${GIRARA_INC} ${GLIB_INC} ${ZATHURA_INC} ${LIBARCHIVE_INC}
-LIBS = ${GIRARA_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
+INCS = ${GIRARA_INC} ${GDK_INC} ${GLIB_INC} ${ZATHURA_INC} ${LIBARCHIVE_INC}
+LIBS = ${GIRARA_LIB} ${GDK_LIB} ${GLIB_LIB} ${LIBARCHIVE_LIB}
 
 # plugindir
 PLUGINDIR ?= $(shell pkg-config --variable=plugindir zathura)

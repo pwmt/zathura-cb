@@ -32,6 +32,18 @@ zathura_error_t cb_document_open(zathura_document_t* document);
 zathura_error_t cb_document_free(zathura_document_t* document, cb_document_t* cb_document);
 
 /**
+ * Generates the index of the document
+ *
+ * @param document Zathura document
+ * @param error Set to an error value (see zathura_error_t) if an
+ *   error occured
+ * @return Tree node object or NULL if an error occurred (e.g.: the document has
+ *   no index)
+ */
+girara_tree_node_t* cb_document_index_generate(zathura_document_t* document,
+    cb_document_t* cb_document, zathura_error_t* error);
+
+/**
  * Initializes a page
  *
  * @param page The page
