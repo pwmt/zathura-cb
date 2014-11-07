@@ -166,9 +166,13 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
 
         size_t size = 0;
         const void* buf = NULL;
-        off_t offset = 0;
+        __LA_INT64_T offset = 0;
         while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
-          if (size <= 0) {
+          if (r < ARCHIVE_WARN) {
+            break;
+          }
+
+          if (buf == NULL || size <= 0) {
             continue;
           }
 
@@ -176,7 +180,7 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
             break;
           }
 
-          if (meta->width > 0 || meta->height > 0) {
+          if (meta->width > 0 && meta->height > 0) {
             break;
           }
         }

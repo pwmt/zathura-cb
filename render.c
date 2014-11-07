@@ -85,7 +85,7 @@ load_pixbuf_from_archive(const char* archive, const char* file)
 
     size_t size = 0;
     const void* buf = NULL;
-    off_t offset = 0;
+    __LA_INT64_T offset = 0;
     while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
       if (r < ARCHIVE_WARN) {
         archive_read_close(a);
@@ -94,7 +94,7 @@ load_pixbuf_from_archive(const char* archive, const char* file)
         return NULL;
       }
 
-      if (size == 0) {
+      if (size == 0 || buf == NULL) {
         continue;
       }
 
