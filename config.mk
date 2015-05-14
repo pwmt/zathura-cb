@@ -43,7 +43,7 @@ PLUGINDIR = ${LIBDIR}/zathura
 endif
 
 # flags
-CFLAGS += -std=c99 -fPIC -pedantic -Wall -Wno-format-zero-length $(INCS)
+CFLAGS += -std=c11 -fPIC -pedantic -Wall -Wno-format-zero-length $(INCS)
 
 # debug
 DFLAGS ?= -g
