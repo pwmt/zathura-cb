@@ -2,7 +2,7 @@
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_REV = 5
+VERSION_REV = 6
 VERSION = ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}
 
 # minimum required zathura version
@@ -42,8 +42,11 @@ ifeq (,${PLUGINDIR})
 PLUGINDIR = ${LIBDIR}/zathura
 endif
 
-# flags
+# compiler flags
 CFLAGS += -std=c11 -fPIC -pedantic -Wall -Wno-format-zero-length $(INCS)
+
+# linker flags
+LDFLAGS += -fPIC
 
 # debug
 DFLAGS ?= -g

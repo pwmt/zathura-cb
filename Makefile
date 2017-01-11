@@ -5,8 +5,8 @@ include common.mk
 
 PROJECT  = zathura-cb
 PLUGIN   = cb
-SOURCE   = $(wildcard *.c)
-HEADER   = $(wildcard *.h)
+SOURCE   = $(sort $(wildcard *.c))
+HEADER   = $(sort $(wildcard *.h))
 OBJECTS  = ${SOURCE:.c=.o}
 DOBJECTS = ${SOURCE:.c=.do}
 
