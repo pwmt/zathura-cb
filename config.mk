@@ -51,9 +51,6 @@ LDFLAGS += -fPIC
 # debug
 DFLAGS ?= -g
 
-# build with cairo support?
-WITH_CAIRO ?= 1
-
 # compiler
 CC ?= gcc
 LD ?= ld

@@ -10,13 +10,8 @@
 #include "internal.h"
 #include "utils.h"
 
-#if !defined(HAVE_CAIRO)
-#error "Cannot render without cairo"
-#endif
-
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
 
-#if HAVE_CAIRO
 zathura_error_t
 cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     cairo_t* cairo, bool printing)
@@ -41,7 +36,6 @@ cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
 
   return ZATHURA_ERROR_OK;
 }
-#endif
 
 static GdkPixbuf*
 load_pixbuf_from_archive(const char* archive, const char* file)

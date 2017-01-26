@@ -60,7 +60,6 @@ zathura_error_t cb_page_init(zathura_page_t* page);
  */
 zathura_error_t cb_page_clear(zathura_page_t* page, cb_page_t* cb_page);
 
-#if HAVE_CAIRO
 /**
  * Renders the page to a cairo object
  *
@@ -72,6 +71,5 @@ zathura_error_t cb_page_clear(zathura_page_t* page, cb_page_t* cb_page);
  */
 zathura_error_t cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
     cairo_t* cairo, bool printing);
-#endif
 
 #endif // CB_H
