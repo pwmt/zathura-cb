@@ -4,10 +4,7 @@
 #define CB_H
 
 #include <stdbool.h>
-
-#if HAVE_CAIRO
 #include <cairo.h>
-#endif
 
 #include <girara/macros.h>
 
