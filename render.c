@@ -13,9 +13,10 @@
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
 
 zathura_error_t
-cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
+cb_page_render_cairo(zathura_page_t* page, void* data,
     cairo_t* cairo, bool printing)
 {
+  cb_page_t* cb_page = data;
   if (page == NULL || cb_page == NULL || cairo == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }

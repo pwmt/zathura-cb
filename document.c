@@ -79,8 +79,9 @@ error_free:
 }
 
 zathura_error_t
-cb_document_free(zathura_document_t* document, cb_document_t* cb_document)
+cb_document_free(zathura_document_t* document, void* data)
 {
+  cb_document_t* cb_document = data;
   if (cb_document == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
