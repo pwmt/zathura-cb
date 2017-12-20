@@ -6,8 +6,9 @@
 
 girara_tree_node_t*
 cb_document_index_generate(zathura_document_t* document,
-                           cb_document_t* cb_document, zathura_error_t* error)
+                           void* data, zathura_error_t* error)
 {
+  cb_document_t* cb_document = data;
   if (document == NULL || cb_document == NULL) {
     if (error != NULL) {
       *error = ZATHURA_ERROR_INVALID_ARGUMENTS;

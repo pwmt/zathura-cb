@@ -3,6 +3,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <girara/macros.h>
+
 /**
  * Compares two paths with each other
  *
@@ -11,6 +13,6 @@
  *
  * @return   
  */
-int compare_path(const char* str1, const char* str2);
+GIRARA_HIDDEN int compare_path(const char* str1, const char* str2);
 
 #endif // UTILS_H

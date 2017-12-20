@@ -4,10 +4,9 @@
 #define CB_H
 
 #include <stdbool.h>
-
-#if HAVE_CAIRO
 #include <cairo.h>
-#endif
+
+#include <girara/macros.h>
 
 #include <zathura/plugin-api.h>
 
@@ -20,7 +19,7 @@ typedef struct cb_page_s cb_page_t;
  * @param document The document
  * @return ZATHURA_ERROR_OK if no error occurred
  */
-zathura_error_t cb_document_open(zathura_document_t* document);
+GIRARA_HIDDEN zathura_error_t cb_document_open(zathura_document_t* document);
 
 /**
  * Frees the document
@@ -29,7 +28,7 @@ zathura_error_t cb_document_open(zathura_document_t* document);
  * @param data Custom data
  * @return ZATHURA_ERROR_OK if no error occurred
  */
-zathura_error_t cb_document_free(zathura_document_t* document, cb_document_t* cb_document);
+GIRARA_HIDDEN zathura_error_t cb_document_free(zathura_document_t* document, void* cb_document);
 
 /**
  * Generates the index of the document
@@ -40,8 +39,8 @@ zathura_error_t cb_document_free(zathura_document_t* document, cb_document_t* cb
  * @return Tree node object or NULL if an error occurred (e.g.: the document has
  *   no index)
  */
-girara_tree_node_t* cb_document_index_generate(zathura_document_t* document,
-    cb_document_t* cb_document, zathura_error_t* error);
+GIRARA_HIDDEN girara_tree_node_t* cb_document_index_generate(zathura_document_t* document,
+    void* cb_document, zathura_error_t* error);
 
 /**
  * Initializes a page
@@ -58,9 +57,8 @@ zathura_error_t cb_page_init(zathura_page_t* page);
  * @param cb_page cb Page
  * @return ZATHURA_ERROR_OK if no error occurred
  */
-zathura_error_t cb_page_clear(zathura_page_t* page, cb_page_t* cb_page);
+GIRARA_HIDDEN zathura_error_t cb_page_clear(zathura_page_t* page, void* cb_page);
 
-#if HAVE_CAIRO
 /**
  * Renders the page to a cairo object
  *
@@ -70,8 +68,7 @@ zathura_error_t cb_page_clear(zathura_page_t* page, cb_page_t* cb_page);
  * @param printing Render for printing
  * @return ZATHURA_ERROR_OK if no error occurred
  */
-zathura_error_t cb_page_render_cairo(zathura_page_t* page, cb_page_t* cb_page,
+GIRARA_HIDDEN zathura_error_t cb_page_render_cairo(zathura_page_t* page, void* cb_page,
     cairo_t* cairo, bool printing);
-#endif
 
 #endif // CB_H
