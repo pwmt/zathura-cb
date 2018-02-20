@@ -4,7 +4,7 @@
 .depend
 *.so
 *.swp
-zathura-version-check
 tags
 compile_commands.json
 .ycm_extra_conf.*
+build
