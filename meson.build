@@ -15,9 +15,12 @@ metainfodir = join_paths(datadir, 'metainfo')
 
 # required dependencies
 zathura = dependency('zathura', version: '>=0.3.8')
+girara = dependency('girara-gtk3')
+glib = dependency('glib-2.0')
+cairo = dependency('cairo')
 libarchive = dependency('libarchive')
 
-build_dependencies = [zathura, libarchive]
+build_dependencies = [zathura, girara, glib, cairo, libarchive]
 
 # defines
 defines = [
