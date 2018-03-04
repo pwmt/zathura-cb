@@ -42,12 +42,12 @@ flags = [
 flags = cc.get_supported_arguments(flags)
 
 sources = files(
-  'document.c',
-  'index.c',
-  'page.c',
-  'plugin.c',
-  'render.c',
-  'utils.c'
+  'zathura-cb/document.c',
+  'zathura-cb/index.c',
+  'zathura-cb/page.c',
+  'zathura-cb/plugin.c',
+  'zathura-cb/render.c',
+  'zathura-cb/utils.c'
 )
 
 cb = shared_module('cb',
