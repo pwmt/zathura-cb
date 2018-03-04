@@ -35,7 +35,8 @@ flags = [
   '-Wall',
   '-Wextra',
   '-pedantic',
-  '-Werror=implicit-function-declaration'
+  '-Werror=implicit-function-declaration',
+  '-Werror=vla'
 ]
 flags = cc.get_supported_arguments(flags)
 
