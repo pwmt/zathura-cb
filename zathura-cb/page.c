@@ -39,7 +39,7 @@ cb_page_init(zathura_page_t* page)
 }
 
 zathura_error_t
-cb_page_clear(zathura_page_t* page, void* data)
+cb_page_clear(zathura_page_t* UNUSED(page), void* data)
 {
   cb_page_t* cb_page = data;
   if (cb_page == NULL) {
