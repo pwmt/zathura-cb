@@ -20,13 +20,13 @@ glib = dependency('glib-2.0')
 cairo = dependency('cairo')
 libarchive = dependency('libarchive')
 
+build_dependencies = [zathura, girara, glib, cairo, libarchive]
+
 if get_option('plugindir') == ''
   plugindir = zathura.get_pkgconfig_variable('plugindir')
 else
   plugindir = get_option('plugindir')
 endif
-
-build_dependencies = [zathura, girara, glib, cairo, libarchive]
 
 # defines
 defines = [
