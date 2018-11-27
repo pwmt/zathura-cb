@@ -1,4 +1,4 @@
-/* See LICENSE file for license and copyright information */
+/* SPDX-License-Identifier: Zlib */
 
 #ifndef CB_H
 #define CB_H
