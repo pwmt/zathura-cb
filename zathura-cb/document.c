@@ -1,4 +1,4 @@
-/* See LICENSE file for license and copyright information */
+/* SPDX-License-Identifier: Zlib */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,7 +26,7 @@ cb_document_open(zathura_document_t* document)
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
 
-  cb_document_t* cb_document = g_malloc0(sizeof(cb_document));
+  cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* archive path */
   const char* path = zathura_document_get_path(document);

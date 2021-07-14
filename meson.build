@@ -1,5 +1,5 @@
 project('zathura-cb', 'c',
-  version: '0.1.8',
+  version: '0.1.9',
   meson_version: '>=0.43',
   default_options: 'c_std=c11'
 )
@@ -21,6 +21,12 @@ cairo = dependency('cairo')
 libarchive = dependency('libarchive')
 
 build_dependencies = [zathura, girara, glib, cairo, libarchive]
+
+if get_option('plugindir') == ''
+  plugindir = zathura.get_pkgconfig_variable('plugindir')
+else
+  plugindir = get_option('plugindir')
+endif
 
 # defines
 defines = [
@@ -55,7 +61,7 @@ cb = shared_module('cb',
   dependencies: build_dependencies,
   c_args: defines + flags,
   install: true,
-  install_dir: zathura.get_pkgconfig_variable('plugindir')
+  install_dir: plugindir
 )
 
 subdir('data')
