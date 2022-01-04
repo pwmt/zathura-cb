@@ -13,10 +13,11 @@ Installation
 ------------
 To build and install the plugin:
 
-  make install
+  meson build
+  ninja -C build/ install
 
 Uninstall:
 ----------
 To delete the plugin from your system, just type:
 
-  make uninstall
+  ninja -C build/ uninstall
