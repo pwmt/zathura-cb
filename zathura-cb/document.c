@@ -9,6 +9,7 @@
 #include <girara/datastructures.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <dirent.h>
 
 #include "plugin.h"
 #include "internal.h"
@@ -18,6 +19,8 @@ static int compare_pages(const cb_document_page_meta_t* page1, const cb_document
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
 static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
+static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+static char* join(const char* dirpath, char* entry_name);
 
 zathura_error_t
 cb_document_open(zathura_document_t* document)
@@ -25,7 +28,6 @@ cb_document_open(zathura_document_t* document)
   if (document == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
-
   cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* archive path */
@@ -58,8 +60,15 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  if (read_archive(cb_document, path, supported_extensions) == false) {
-    goto error_free;
+  //if (is_dir(path)) {
+  if (g_file_test(path, G_FILE_TEST_IS_DIR)) {
+    if (read_dir(cb_document, path, supported_extensions) == false) {
+      goto error_free;
+    }
+  } else {
+    if (read_archive(cb_document, path, supported_extensions) == false) {
+      goto error_free;
+    }
   }
 
   girara_list_free(supported_extensions);
@@ -207,6 +216,42 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
   return true;
 }
 
+static bool
+read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
+{
+  GDir* dir = g_dir_open(directory, 0, NULL);
+  char* entrypath = NULL;
+  while ((entrypath = g_dir_read_name(dir))) {
+    char* fullpath = join(directory, entrypath);
+    char* extension = get_extension(fullpath);
+    if (extension == NULL)
+        continue;
+
+    GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
+      if (g_strcmp0(ext, extension) == 0) {
+        cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
+        meta->file = g_strdup(fullpath);
+        g_free(fullpath);
+        GdkPixbuf* data = gdk_pixbuf_new_from_file(meta->file, NULL);
+        meta->width = gdk_pixbuf_get_width(data);
+        meta->height = gdk_pixbuf_get_height(data);
+
+        if (meta->width > 0 && meta->height > 0) {
+          girara_list_append(cb_document->pages, meta);
+        } else {
+          cb_document_page_meta_free(meta);
+        }
+
+        break;
+      }
+    GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
+
+    g_free(extension);
+  }
+  g_dir_close(dir);
+  return true;
+}
+
 static int
 compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2)
 {
@@ -226,4 +271,23 @@ get_extension(const char* path)
   }
 
   return g_ascii_strdown(res + 1, -1);
+}
+
+static char*
+join(const char* dirpath, char* entry_name)
+{
+  size_t dirpath_sz = strlen(dirpath);
+  size_t entry_name_sz = strlen(entry_name);
+  size_t fullpath_sz = dirpath_sz + entry_name_sz + 1;
+  char* fullpath = NULL;
+  if (dirpath[dirpath_sz - 2] != '/') {
+    fullpath_sz++;
+    fullpath = g_malloc0(fullpath_sz);
+    snprintf(fullpath, fullpath_sz, "%s/%s", dirpath, entry_name);
+  } else {
+    fullpath = g_malloc0(fullpath_sz);
+    snprintf(fullpath, fullpath_sz, "%s%s", dirpath, entry_name);
+  }
+
+  return fullpath;
 }

@@ -21,6 +21,7 @@ ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS(
     "application/x-cb7",
     "application/x-7z-compressed",
     "application/x-cbt",
-    "application/x-tar"
+    "application/x-tar",
+    "inode/directory"
   })
 )

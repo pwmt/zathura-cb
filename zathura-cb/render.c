@@ -45,82 +45,87 @@ load_pixbuf_from_archive(const char* archive, const char* file)
     return NULL;
   }
 
-  struct archive* a = archive_read_new();
-  if (a == NULL) {
-    return NULL;
-  }
-
-  archive_read_support_filter_all(a);
-  archive_read_support_format_all(a);
-  int r = archive_read_open_filename(a, archive, LIBARCHIVE_BUFFER_SIZE);
-  if (r != ARCHIVE_OK) {
-    return NULL;
-  }
-
-  struct archive_entry* entry = NULL;
-  while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
-    if (r < ARCHIVE_WARN) {
-      archive_read_close(a);
-      archive_read_free(a);
+  //if (is_dir(archive)) {
+  if (g_file_test(archive, G_FILE_TEST_IS_DIR)) {
+    return gdk_pixbuf_new_from_file(file, NULL);
+  } else {
+    struct archive* a = archive_read_new();
+    if (a == NULL) {
       return NULL;
     }
 
-    const char* path = archive_entry_pathname(entry);
-    if (compare_path(path, file) != 0) {
-      continue;
-    }
-
-    GInputStream* is = g_memory_input_stream_new();
-    if (is == NULL) {
-      archive_read_close(a);
-      archive_read_free(a);
+    archive_read_support_filter_all(a);
+    archive_read_support_format_all(a);
+    int r = archive_read_open_filename(a, archive, LIBARCHIVE_BUFFER_SIZE);
+    if (r != ARCHIVE_OK) {
       return NULL;
     }
-    GMemoryInputStream* mis = G_MEMORY_INPUT_STREAM(is);
 
-    size_t size = 0;
-    const void* buf = NULL;
-    __LA_INT64_T offset = 0;
-    while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
+    struct archive_entry* entry = NULL;
+    while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
       if (r < ARCHIVE_WARN) {
         archive_read_close(a);
         archive_read_free(a);
-        g_object_unref(mis);
         return NULL;
       }
 
-      if (size == 0 || buf == NULL) {
+      const char* path = archive_entry_pathname(entry);
+      if (compare_path(path, file) != 0) {
         continue;
       }
 
-      void* tmp = g_malloc0(size);
-      if (tmp == NULL) {
+      GInputStream* is = g_memory_input_stream_new();
+      if (is == NULL) {
+        archive_read_close(a);
+        archive_read_free(a);
+        return NULL;
+      }
+      GMemoryInputStream* mis = G_MEMORY_INPUT_STREAM(is);
+
+      size_t size = 0;
+      const void* buf = NULL;
+      __LA_INT64_T offset = 0;
+      while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
+        if (r < ARCHIVE_WARN) {
+          archive_read_close(a);
+          archive_read_free(a);
+          g_object_unref(mis);
+          return NULL;
+        }
+
+        if (size == 0 || buf == NULL) {
+          continue;
+        }
+
+        void* tmp = g_malloc0(size);
+        if (tmp == NULL) {
+          archive_read_close(a);
+          archive_read_free(a);
+          g_object_unref(mis);
+          return NULL;
+        }
+
+        memcpy(tmp, buf, size);
+        g_memory_input_stream_add_data(mis, tmp, size, g_free);
+      }
+
+      GdkPixbuf* pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
+      if (pixbuf == NULL) {
         archive_read_close(a);
         archive_read_free(a);
         g_object_unref(mis);
         return NULL;
       }
 
-      memcpy(tmp, buf, size);
-      g_memory_input_stream_add_data(mis, tmp, size, g_free);
-    }
-
-    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
-    if (pixbuf == NULL) {
       archive_read_close(a);
       archive_read_free(a);
       g_object_unref(mis);
-      return NULL;
+      return pixbuf;
     }
 
     archive_read_close(a);
     archive_read_free(a);
-    g_object_unref(mis);
-    return pixbuf;
   }
-
-  archive_read_close(a);
-  archive_read_free(a);
   return NULL;
 }
 
