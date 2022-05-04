@@ -19,7 +19,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
 static char* get_extension(const char* path);
 static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
-static char* join(const char* dirpath, char* entry_name);
 
 zathura_error_t
 cb_document_open(zathura_document_t* document)
@@ -220,7 +219,7 @@ read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* suppo
   GDir* dir = g_dir_open(directory, 0, NULL);
   const char* entrypath = NULL;
   while ((entrypath = g_dir_read_name(dir))) {
-    char* fullpath = join(directory, entrypath);
+    char* fullpath = g_strdup_printf("%s/%s", directory, entrypath);
     char* extension = get_extension(fullpath);
     if (extension == NULL) {
         continue;
@@ -272,21 +271,3 @@ get_extension(const char* path)
   return g_ascii_strdown(res + 1, -1);
 }
 
-static char*
-join(const char* dirpath, char* entry_name)
-{
-  size_t dirpath_sz = strlen(dirpath);
-  size_t entry_name_sz = strlen(entry_name);
-  size_t fullpath_sz = dirpath_sz + entry_name_sz + 1;
-  char* fullpath = NULL;
-  if (dirpath[dirpath_sz - 2] != '/') {
-    fullpath_sz++;
-    fullpath = g_malloc0(fullpath_sz);
-    snprintf(fullpath, fullpath_sz, "%s/%s", dirpath, entry_name);
-  } else {
-    fullpath = g_malloc0(fullpath_sz);
-    snprintf(fullpath, fullpath_sz, "%s%s", dirpath, entry_name);
-  }
-
-  return fullpath;
-}
