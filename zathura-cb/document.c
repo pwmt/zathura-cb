@@ -9,7 +9,6 @@
 #include <girara/datastructures.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include <dirent.h>
 
 #include "plugin.h"
 #include "internal.h"
