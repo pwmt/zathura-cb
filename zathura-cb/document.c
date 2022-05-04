@@ -59,7 +59,6 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  //if (is_dir(path)) {
   if (g_file_test(path, G_FILE_TEST_IS_DIR)) {
     if (read_dir(cb_document, path, supported_extensions) == false) {
       goto error_free;
@@ -219,12 +218,13 @@ static bool
 read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
 {
   GDir* dir = g_dir_open(directory, 0, NULL);
-  char* entrypath = NULL;
+  const char* entrypath = NULL;
   while ((entrypath = g_dir_read_name(dir))) {
     char* fullpath = join(directory, entrypath);
     char* extension = get_extension(fullpath);
-    if (extension == NULL)
+    if (extension == NULL) {
         continue;
+    }
 
     GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
       if (g_strcmp0(ext, extension) == 0) {

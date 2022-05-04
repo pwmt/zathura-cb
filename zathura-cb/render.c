@@ -45,7 +45,6 @@ load_pixbuf_from_archive(const char* archive, const char* file)
     return NULL;
   }
 
-  //if (is_dir(archive)) {
   if (g_file_test(archive, G_FILE_TEST_IS_DIR)) {
     return gdk_pixbuf_new_from_file(file, NULL);
   } else {
