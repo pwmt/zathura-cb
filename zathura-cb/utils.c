@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Zlib */
 
 #include <glib.h>
+#include <dirent.h>
 
 #include "utils.h"
 
@@ -14,4 +15,12 @@ compare_path(const char* str1, const char* str2)
   g_free(ustr2);
 
   return result;
+}
+
+int
+is_dir(const char* path)
+{
+  DIR* dir = opendir(path);
+  closedir(dir);
+  return !!dir;
 }
