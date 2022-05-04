@@ -14,11 +14,5 @@
  * @return   
  */
 GIRARA_HIDDEN int compare_path(const char* str1, const char* str2);
-/**
- * Checks if a file is a directory
- * 
- * @param path The filepath
- */
-int is_dir(const char* path);
 
 #endif // UTILS_H

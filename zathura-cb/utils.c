@@ -16,11 +16,3 @@ compare_path(const char* str1, const char* str2)
 
   return result;
 }
-
-int
-is_dir(const char* path)
-{
-  DIR* dir = opendir(path);
-  closedir(dir);
-  return !!dir;
-}

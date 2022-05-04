@@ -20,7 +20,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
 static char* get_extension(const char* path);
 static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
-static int is_entry_file(struct dirent* e);
 static char* join(const char* dirpath, char* entry_name);
 
 zathura_error_t
@@ -61,7 +60,8 @@ cb_document_open(zathura_document_t* document)
   }
 
   /* read files recursively */
-  if (is_dir(path)) {
+  //if (is_dir(path)) {
+  if (g_file_test(path, G_FILE_TEST_IS_DIR)) {
     if (read_dir(cb_document, path, supported_extensions) == false) {
       goto error_free;
     }
@@ -219,38 +219,36 @@ read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* sup
 static bool
 read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions)
 {
-  DIR* dir = opendir(directory);
-  struct dirent* entry;
-  while ((entry = readdir(dir))) {
-    if (is_entry_file(entry)) {
-      char* entrypath = join(directory, entry->d_name);
-      char* extension = get_extension(entrypath);
-      if (extension == NULL)
-          continue;
+  GDir* dir = g_dir_open(directory, 0, NULL);
+  char* entrypath = NULL;
+  while ((entrypath = g_dir_read_name(dir))) {
+    char* fullpath = join(directory, entrypath);
+    char* extension = get_extension(fullpath);
+    if (extension == NULL)
+        continue;
 
-      GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
-        if (g_strcmp0(ext, extension) == 0) {
-          cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
-          meta->file = g_strdup(entrypath);
-          GdkPixbuf* data = gdk_pixbuf_new_from_file(entrypath, NULL);
-          meta->width = gdk_pixbuf_get_width(data);
-          meta->height = gdk_pixbuf_get_height(data);
+    GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
+      if (g_strcmp0(ext, extension) == 0) {
+        cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
+        meta->file = g_strdup(fullpath);
+        g_free(fullpath);
+        GdkPixbuf* data = gdk_pixbuf_new_from_file(meta->file, NULL);
+        meta->width = gdk_pixbuf_get_width(data);
+        meta->height = gdk_pixbuf_get_height(data);
 
-          if (meta->width > 0 && meta->height > 0) {
-            girara_list_append(cb_document->pages, meta);
-          } else {
-            cb_document_page_meta_free(meta);
-          }
-
-          break;
+        if (meta->width > 0 && meta->height > 0) {
+          girara_list_append(cb_document->pages, meta);
+        } else {
+          cb_document_page_meta_free(meta);
         }
-      GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
 
-      g_free(entrypath);
-      g_free(extension);
-    }
+        break;
+      }
+    GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
+
+    g_free(extension);
   }
-  closedir(dir);
+  g_dir_close(dir);
   return true;
 }
 
@@ -273,16 +271,6 @@ get_extension(const char* path)
   }
 
   return g_ascii_strdown(res + 1, -1);
-}
-
-static int
-is_entry_file(struct dirent* e)
-{
-  return (e->d_type != DT_BLK &&
-          e->d_type != DT_CHR &&
-          e->d_type != DT_DIR &&
-          e->d_type != DT_FIFO &&
-          e->d_type != DT_SOCK);
 }
 
 static char*
