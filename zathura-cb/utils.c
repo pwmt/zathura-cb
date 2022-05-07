@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
 
 #include <glib.h>
-#include <dirent.h>
 
 #include "utils.h"
 
