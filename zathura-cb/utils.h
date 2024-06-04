@@ -11,7 +11,7 @@
  * @param str1 First path
  * @param str2 Second path
  *
- * @return   
+ * @return
  */
 GIRARA_HIDDEN int compare_path(const char* str1, const char* str2);
 

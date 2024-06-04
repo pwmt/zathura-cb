@@ -39,8 +39,8 @@ GIRARA_HIDDEN zathura_error_t cb_document_free(zathura_document_t* document, voi
  * @return Tree node object or NULL if an error occurred (e.g.: the document has
  *   no index)
  */
-GIRARA_HIDDEN girara_tree_node_t* cb_document_index_generate(zathura_document_t* document,
-    void* cb_document, zathura_error_t* error);
+GIRARA_HIDDEN girara_tree_node_t* cb_document_index_generate(zathura_document_t* document, void* cb_document,
+                                                             zathura_error_t* error);
 
 /**
  * Initializes a page
@@ -68,7 +68,6 @@ GIRARA_HIDDEN zathura_error_t cb_page_clear(zathura_page_t* page, void* cb_page)
  * @param printing Render for printing
  * @return ZATHURA_ERROR_OK if no error occurred
  */
-GIRARA_HIDDEN zathura_error_t cb_page_render_cairo(zathura_page_t* page, void* cb_page,
-    cairo_t* cairo, bool printing);
+GIRARA_HIDDEN zathura_error_t cb_page_render_cairo(zathura_page_t* page, void* cb_page, cairo_t* cairo, bool printing);
 
 #endif // CB_H
