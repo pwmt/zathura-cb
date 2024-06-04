@@ -14,8 +14,8 @@ girara_tree_node_t* cb_document_index_generate(zathura_document_t* document, voi
   }
 
   girara_tree_node_t* root = girara_node_new(zathura_index_element_new("ROOT"));
-  unsigned int page_number = 0;
-  GIRARA_LIST_FOREACH(cb_document->pages, cb_document_page_meta_t*, iter, page) {
+  for (unsigned int page_number = 0; page_number < girara_list_size(cb_document->pages); ++page_number) {
+    cb_document_page_meta_t* page          = girara_list_nth(cb_document->pages, page_number);
     gchar* markup                          = g_markup_escape_text(page->file, -1);
     zathura_index_element_t* index_element = zathura_index_element_new(markup);
     g_free(markup);
@@ -27,9 +27,7 @@ girara_tree_node_t* cb_document_index_generate(zathura_document_t* document, voi
       index_element->link = zathura_link_new(ZATHURA_LINK_GOTO_DEST, rect, target);
       girara_node_append_data(root, index_element);
     }
-    ++page_number;
   }
-  GIRARA_LIST_FOREACH_END(cb_document->pages, cb_document_page_meta_t*, iter, page);
 
   return root;
 }

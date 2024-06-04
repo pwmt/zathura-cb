@@ -153,47 +153,48 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
       continue;
     }
 
-    GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
-    if (g_strcmp0(extension, ext) == 0) {
-      cb_document_page_meta_t* meta = g_malloc0(sizeof(cb_document_page_meta_t));
-      meta->file                    = g_strdup(path);
+    for (size_t index = 0; index < girara_list_size(supported_extensions); ++index) {
+      const char* ext = girara_list_nth(supported_extensions, index);
+      if (g_strcmp0(extension, ext) == 0) {
+        cb_document_page_meta_t* meta = g_malloc0(sizeof(cb_document_page_meta_t));
+        meta->file                    = g_strdup(path);
 
-      GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
-      g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), meta);
+        GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+        g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), meta);
 
-      size_t size         = 0;
-      const void* buf     = NULL;
-      __LA_INT64_T offset = 0;
-      while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
-        if (r < ARCHIVE_WARN) {
-          break;
+        size_t size         = 0;
+        const void* buf     = NULL;
+        __LA_INT64_T offset = 0;
+        while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
+          if (r < ARCHIVE_WARN) {
+            break;
+          }
+
+          if (buf == NULL || size <= 0) {
+            continue;
+          }
+
+          if (gdk_pixbuf_loader_write(loader, buf, size, NULL) == false) {
+            break;
+          }
+
+          if (meta->width > 0 && meta->height > 0) {
+            break;
+          }
         }
 
-        if (buf == NULL || size <= 0) {
-          continue;
-        }
-
-        if (gdk_pixbuf_loader_write(loader, buf, size, NULL) == false) {
-          break;
-        }
+        gdk_pixbuf_loader_close(loader, NULL);
+        g_object_unref(loader);
 
         if (meta->width > 0 && meta->height > 0) {
-          break;
+          girara_list_append(cb_document->pages, meta);
+        } else {
+          cb_document_page_meta_free(meta);
         }
+
+        break;
       }
-
-      gdk_pixbuf_loader_close(loader, NULL);
-      g_object_unref(loader);
-
-      if (meta->width > 0 && meta->height > 0) {
-        girara_list_append(cb_document->pages, meta);
-      } else {
-        cb_document_page_meta_free(meta);
-      }
-
-      break;
     }
-    GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
 
     g_free(extension);
   }
@@ -213,24 +214,25 @@ static bool read_dir(cb_document_t* cb_document, const char* directory, girara_l
       continue;
     }
 
-    GIRARA_LIST_FOREACH(supported_extensions, char*, iter, ext)
-    if (g_strcmp0(ext, extension) == 0) {
-      cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
-      meta->file                    = g_strdup(fullpath);
-      g_free(fullpath);
-      GdkPixbuf* data = gdk_pixbuf_new_from_file(meta->file, NULL);
-      meta->width     = gdk_pixbuf_get_width(data);
-      meta->height    = gdk_pixbuf_get_height(data);
+    for (size_t index = 0; index < girara_list_size(supported_extensions); ++index) {
+      const char* ext = girara_list_nth(supported_extensions, index);
+      if (g_strcmp0(ext, extension) == 0) {
+        cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
+        meta->file                    = g_strdup(fullpath);
+        g_free(fullpath);
+        GdkPixbuf* data = gdk_pixbuf_new_from_file(meta->file, NULL);
+        meta->width     = gdk_pixbuf_get_width(data);
+        meta->height    = gdk_pixbuf_get_height(data);
 
-      if (meta->width > 0 && meta->height > 0) {
-        girara_list_append(cb_document->pages, meta);
-      } else {
-        cb_document_page_meta_free(meta);
+        if (meta->width > 0 && meta->height > 0) {
+          girara_list_append(cb_document->pages, meta);
+        } else {
+          cb_document_page_meta_free(meta);
+        }
+
+        break;
       }
-
-      break;
     }
-    GIRARA_LIST_FOREACH_END(supported_extensions, char*, iter, ext);
 
     g_free(extension);
   }
