@@ -12,10 +12,7 @@
 
 static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file);
 
-zathura_error_t
-cb_page_render_cairo(zathura_page_t* page, void* data,
-    cairo_t* cairo, bool UNUSED(printing))
-{
+zathura_error_t cb_page_render_cairo(zathura_page_t* page, void* data, cairo_t* cairo, bool UNUSED(printing)) {
   cb_page_t* cb_page = data;
   if (page == NULL || cb_page == NULL || cairo == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
@@ -38,9 +35,7 @@ cb_page_render_cairo(zathura_page_t* page, void* data,
   return ZATHURA_ERROR_OK;
 }
 
-static GdkPixbuf*
-load_pixbuf_from_archive(const char* archive, const char* file)
-{
+static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file) {
   if (archive == NULL || file == NULL) {
     return NULL;
   }
@@ -81,8 +76,8 @@ load_pixbuf_from_archive(const char* archive, const char* file)
       }
       GMemoryInputStream* mis = G_MEMORY_INPUT_STREAM(is);
 
-      size_t size = 0;
-      const void* buf = NULL;
+      size_t size         = 0;
+      const void* buf     = NULL;
       __LA_INT64_T offset = 0;
       while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
         if (r < ARCHIVE_WARN) {
@@ -127,4 +122,3 @@ load_pixbuf_from_archive(const char* archive, const char* file)
   }
   return NULL;
 }
-

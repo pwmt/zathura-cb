@@ -1,7 +1,7 @@
 project('zathura-cb', 'c',
-  version: '0.1.10',
-  meson_version: '>=0.43',
-  default_options: 'c_std=c11'
+  version: '0.1.11',
+  meson_version: '>=0.61',
+  default_options: ['c_std=c17', 'warning_level=3']
 )
 
 version = meson.project_version()
@@ -23,7 +23,7 @@ libarchive = dependency('libarchive')
 build_dependencies = [zathura, girara, glib, cairo, libarchive]
 
 if get_option('plugindir') == ''
-  plugindir = zathura.get_pkgconfig_variable('plugindir')
+  plugindir = zathura.get_variable(pkgconfig: 'plugindir')
 else
   plugindir = get_option('plugindir')
 endif
