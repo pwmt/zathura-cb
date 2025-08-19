@@ -4,8 +4,18 @@
   <id>org.pwmt.zathura-cb</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>Zlib</project_license>
+  <developer id="org.pwmt">
+    <name>pwmt</name>
+  </developer>
   <extends>org.pwmt.zathura</extends>
   <name>Zathura-CB</name>
   <summary>Comic book plugin for zathura</summary>
-  <url type="homepage">https://pwmt.org/projects/zathur-cb/</url>
+  <url type="homepage">https://pwmt.org/projects/zathura-cb/</url>
+  <url type="bugtracker">https://github.com/pwmt/zathura-cb/issues</url>
+  <url type="donation">https://pwmt.org/help/donate</url>
+  <url type="contact">https://pwmt.org/contact</url>
+  <url type="vcs-browser">https://github.com/pwmt/zathura-cb</url>
+  <releases>
+    <release version="0.1.11" date="2024-08-04" />
+  </releases>
 </component>
