@@ -30,7 +30,7 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
   const char* path = zathura_document_get_path(document);
 
   /* create list of supported formats */
-  girara_list_t* supported_extensions = girara_list_new2(g_free);
+  girara_list_t* supported_extensions = girara_list_new_with_free(g_free);
   if (supported_extensions == NULL) {
     goto error_free;
   }
@@ -49,8 +49,8 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
   g_slist_free(formats);
 
   /* create list of supported files (pages) */
-  cb_document->pages = girara_sorted_list_new2((girara_compare_function_t)compare_pages,
-                                               (girara_free_function_t)cb_document_page_meta_free);
+  cb_document->pages = girara_sorted_list_new_with_free((girara_compare_function_t)compare_pages,
+                                                        (girara_free_function_t)cb_document_page_meta_free);
   if (cb_document->pages == NULL) {
     goto error_free;
   }
