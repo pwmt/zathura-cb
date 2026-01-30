@@ -6,7 +6,7 @@ The zathura-cb plugin adds comic book support to zathura.
 Requirements
 ------------
 
-* `zathura` (>= 0.2.0)
+* `zathura` (>= 2026.01.30)
 * `libarchive`
 * `girara`
 * `cairo`

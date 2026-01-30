@@ -1,5 +1,5 @@
 project('zathura-cb', 'c',
-  version: '0.1.12',
+  version: '2026.01.30',
   meson_version: '>=0.61',
   default_options: ['c_std=c17', 'warning_level=3']
 )
@@ -14,7 +14,7 @@ desktopdir = join_paths(datadir, 'applications')
 metainfodir = join_paths(datadir, 'metainfo')
 
 # required dependencies
-zathura = dependency('zathura', version: '>=0.3.8')
+zathura = dependency('zathura', version: '>=2026.01.30')
 girara = dependency('girara-gtk3')
 glib = dependency('glib-2.0')
 cairo = dependency('cairo')
@@ -38,12 +38,10 @@ defines = [
 
 # compile flags
 flags = [
-  '-Wall',
-  '-Wextra',
-  '-pedantic',
   '-Werror=implicit-function-declaration',
   '-Werror=vla',
-  '-fvisibility=hidden'
+  '-Werror=int-conversion',
+  '-Werror=maybe-uninitialized'
 ]
 flags = cc.get_supported_arguments(flags)
 
@@ -61,7 +59,8 @@ cb = shared_module('cb',
   dependencies: build_dependencies,
   c_args: defines + flags,
   install: true,
-  install_dir: plugindir
+  install_dir: plugindir,
+  gnu_symbol_visibility: 'hidden'
 )
 
 subdir('data')
