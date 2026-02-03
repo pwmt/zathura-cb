@@ -1,5 +1,5 @@
 project('zathura-cb', 'c',
-  version: '2026.01.30',
+  version: '2026.02.03',
   meson_version: '>=0.61',
   default_options: ['c_std=c17', 'warning_level=3']
 )
@@ -15,7 +15,7 @@ metainfodir = join_paths(datadir, 'metainfo')
 
 # required dependencies
 zathura = dependency('zathura', version: '>=2026.01.30')
-girara = dependency('girara-gtk3')
+girara = dependency('girara')
 glib = dependency('glib-2.0')
 cairo = dependency('cairo')
 libarchive = dependency('libarchive')
