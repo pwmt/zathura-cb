@@ -88,12 +88,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
       g_memory_input_stream_add_data(mis, tmp, bytes_read, g_free);
     }
 
-    g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
-    if (pixbuf == NULL) {
-      return NULL;
-    }
-
-    return pixbuf;
+    return gdk_pixbuf_new_from_stream(is, NULL, NULL);
   }
 
   return NULL;
