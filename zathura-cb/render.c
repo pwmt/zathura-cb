@@ -52,6 +52,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
   archive_read_support_format_all(a);
   int r = archive_read_open_filename(a, archive, LIBARCHIVE_BUFFER_SIZE);
   if (r != ARCHIVE_OK) {
+    archive_read_free(a);
     return NULL;
   }
 
