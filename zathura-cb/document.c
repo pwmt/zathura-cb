@@ -14,6 +14,12 @@
 #include "internal.h"
 #include "utils.h"
 
+#if defined(BUFSIZ)
+#define BUFFER_SIZE BUFSIZ
+#else
+#define BUFFER_SIZE 4098
+#endif
+
 static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
@@ -162,19 +168,14 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
         g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), meta);
 
-        size_t size         = 0;
-        const void* buf     = NULL;
-        __LA_INT64_T offset = 0;
-        while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
-          if (r < ARCHIVE_WARN) {
+        uint8_t buf[BUFFER_SIZE];
+        la_ssize_t bytes_read;
+        while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
+          if (bytes_read < ARCHIVE_WARN) {
             break;
           }
 
-          if (buf == NULL || size <= 0) {
-            continue;
-          }
-
-          if (gdk_pixbuf_loader_write(loader, buf, size, NULL) == false) {
+          if (gdk_pixbuf_loader_write(loader, buf, bytes_read, NULL) == false) {
             break;
           }
 
