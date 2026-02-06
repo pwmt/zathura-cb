@@ -13,7 +13,6 @@
 #include "internal.h"
 #include "utils.h"
 
-static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
@@ -24,6 +23,13 @@ static void cb_document_page_meta_free(void* data) {
     g_free(meta->file);
     g_free(meta);
   }
+}
+
+static int compare_pages(const void* p1, const void* p2) {
+  const cb_document_page_meta_t* page1 = p1;
+  const cb_document_page_meta_t* page2 = p2;
+
+  return compare_path(page1->file, page2->file);
 }
 
 zathura_error_t cb_document_open(zathura_document_t* document) {
@@ -54,8 +60,7 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
   }
 
   /* create list of supported files (pages) */
-  cb_document->pages =
-      girara_sorted_list_new_with_free((girara_compare_function_t)compare_pages, cb_document_page_meta_free);
+  cb_document->pages = girara_sorted_list_new_with_free(compare_pages, cb_document_page_meta_free);
   if (cb_document->pages == NULL) {
     goto error_free;
   }
@@ -217,10 +222,6 @@ static bool read_dir(cb_document_t* cb_document, const char* directory, girara_l
     }
   }
   return true;
-}
-
-static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2) {
-  return compare_path(page1->file, page2->file);
 }
 
 static char* get_extension(const char* path) {
