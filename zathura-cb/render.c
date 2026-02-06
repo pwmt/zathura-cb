@@ -73,7 +73,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
     }
     GMemoryInputStream* mis = G_MEMORY_INPUT_STREAM(is);
 
-    uint8_t buf[BUFFER_SIZE];
+    uint8_t buf[LIBARCHIVE_BUFFER_SIZE];
     la_ssize_t bytes_read;
     while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
       if (bytes_read < ARCHIVE_WARN) {

@@ -157,7 +157,7 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         g_autoptr(GdkPixbufLoader) loader = gdk_pixbuf_loader_new();
         g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), meta);
 
-        uint8_t buf[BUFFER_SIZE];
+        uint8_t buf[LIBARCHIVE_BUFFER_SIZE];
         la_ssize_t bytes_read;
         while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
           if (bytes_read == ARCHIVE_RETRY) {

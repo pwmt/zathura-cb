@@ -16,12 +16,6 @@
  */
 int compare_path(const char* str1, const char* str2);
 
-#if defined(BUFSIZ)
-#define BUFFER_SIZE BUFSIZ
-#else
-#define BUFFER_SIZE 4098
-#endif
-
 typedef struct archive archive_t;
 
 void libarchive_archive_free(void* archive);
