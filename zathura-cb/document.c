@@ -137,6 +137,8 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
       archive_read_close(a);
       archive_read_free(a);
       return false;
+    } else if (r == ARCHIVE_RETRY) {
+      continue;
     }
 
     if (archive_entry_filetype(entry) != AE_IFREG) {
