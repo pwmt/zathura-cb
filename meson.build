@@ -18,7 +18,7 @@ zathura = dependency('zathura', version: '>=2026.01.30')
 girara = dependency('girara')
 glib = dependency('glib-2.0')
 cairo = dependency('cairo')
-libarchive = dependency('libarchive')
+libarchive = dependency('libarchive', version: '>=3')
 
 build_dependencies = [zathura, girara, glib, cairo, libarchive]
 
