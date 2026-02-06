@@ -57,7 +57,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
   }
 
   struct archive_entry* entry = NULL;
-  while ((r = archive_read_next_header(a, entry)) != ARCHIVE_EOF) {
+  while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
     if (r < ARCHIVE_WARN) {
       archive_read_close(a);
       archive_read_free(a);
@@ -95,8 +95,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
         return NULL;
       }
 
-      memcpy(tmp, buf, size);
-      g_memory_input_stream_add_data(mis, tmp, size, g_free);
+      g_memory_input_stream_add_data(mis, tmp, bytes_read, g_free);
     }
 
     g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);

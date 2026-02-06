@@ -15,4 +15,10 @@
  */
 GIRARA_HIDDEN int compare_path(const char* str1, const char* str2);
 
+#if defined(BUFSIZ)
+#define BUFFER_SIZE BUFSIZ
+#else
+#define BUFFER_SIZE 4098
+#endif
+
 #endif // UTILS_H

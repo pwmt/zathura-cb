@@ -14,12 +14,6 @@
 #include "internal.h"
 #include "utils.h"
 
-#if defined(BUFSIZ)
-#define BUFFER_SIZE BUFSIZ
-#else
-#define BUFFER_SIZE 4098
-#endif
-
 static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
