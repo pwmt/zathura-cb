@@ -22,7 +22,7 @@ zathura_error_t cb_page_init(zathura_page_t* page) {
     return ZATHURA_ERROR_UNKNOWN;
   }
 
-  cb_page_t* cb_page = g_malloc0(sizeof(cb_page_t));
+  cb_page_t* cb_page = g_try_malloc0(sizeof(cb_page_t));
   if (cb_page == NULL) {
     return ZATHURA_ERROR_OUT_OF_MEMORY;
   }
@@ -41,6 +41,9 @@ zathura_error_t cb_page_clear(zathura_page_t* UNUSED(page), void* data) {
     return ZATHURA_ERROR_OK;
   }
 
+  if (cb_page->pixbuf) {
+    g_object_unref(cb_page->pixbuf);
+  }
   g_free(cb_page->file);
   g_free(cb_page);
 
