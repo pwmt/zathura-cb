@@ -23,8 +23,15 @@
 static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
-static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+
+static void cb_document_page_meta_free(void* data) {
+  if (data != NULL) {
+    cb_document_page_meta_t* meta = data;
+    g_free(meta->file);
+    g_free(meta);
+  }
+}
 
 zathura_error_t cb_document_open(zathura_document_t* document) {
   if (document == NULL) {
@@ -55,8 +62,8 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
   g_slist_free(formats);
 
   /* create list of supported files (pages) */
-  cb_document->pages = girara_sorted_list_new_with_free((girara_compare_function_t)compare_pages,
-                                                        (girara_free_function_t)cb_document_page_meta_free);
+  cb_document->pages =
+      girara_sorted_list_new_with_free((girara_compare_function_t)compare_pages, cb_document_page_meta_free);
   if (cb_document->pages == NULL) {
     goto error_free;
   }
@@ -102,17 +109,6 @@ zathura_error_t cb_document_free(zathura_document_t* UNUSED(document), void* dat
   g_free(cb_document);
 
   return ZATHURA_ERROR_OK;
-}
-
-static void cb_document_page_meta_free(cb_document_page_meta_t* meta) {
-  if (meta == NULL) {
-    return;
-  }
-
-  if (meta->file != NULL) {
-    g_free(meta->file);
-  }
-  g_free(meta);
 }
 
 static void get_pixbuf_size(GdkPixbufLoader* loader, int width, int height, gpointer data) {
