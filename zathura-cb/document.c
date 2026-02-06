@@ -111,7 +111,7 @@ static void get_pixbuf_size(GdkPixbufLoader* loader, int width, int height, gpoi
 }
 
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions) {
-  struct archive* a = archive_read_new();
+  g_autoptr(archive_t) a = archive_read_new();
   if (a == NULL) {
     return false;
   }
@@ -120,7 +120,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
   archive_read_support_format_all(a);
   int r = archive_read_open_filename(a, archive, (size_t)LIBARCHIVE_BUFFER_SIZE);
   if (r != ARCHIVE_OK) {
-    archive_read_free(a);
     return false;
   }
 
@@ -128,8 +127,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
   while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
     if (r < ARCHIVE_WARN) {
       // let's ignore warnings ... they are non-fatal errors
-      archive_read_close(a);
-      archive_read_free(a);
       return false;
     } else if (r == ARCHIVE_RETRY) {
       continue;
@@ -187,8 +184,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
     }
   }
 
-  archive_read_close(a);
-  archive_read_free(a);
   return true;
 }
 

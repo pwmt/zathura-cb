@@ -43,7 +43,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
     return gdk_pixbuf_new_from_file(file, NULL);
   }
 
-  struct archive* a = archive_read_new();
+  g_autoptr(archive_t) a = archive_read_new();
   if (a == NULL) {
     return NULL;
   }
@@ -52,15 +52,12 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
   archive_read_support_format_all(a);
   int r = archive_read_open_filename(a, archive, LIBARCHIVE_BUFFER_SIZE);
   if (r != ARCHIVE_OK) {
-    archive_read_free(a);
     return NULL;
   }
 
   struct archive_entry* entry = NULL;
   while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
     if (r < ARCHIVE_WARN) {
-      archive_read_close(a);
-      archive_read_free(a);
       return NULL;
     } else if (r == ARCHIVE_RETRY) {
       continue;
@@ -73,8 +70,6 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
 
     g_autoptr(GInputStream) is = g_memory_input_stream_new();
     if (is == NULL) {
-      archive_read_close(a);
-      archive_read_free(a);
       return NULL;
     }
     GMemoryInputStream* mis = G_MEMORY_INPUT_STREAM(is);
@@ -83,15 +78,11 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
     la_ssize_t bytes_read;
     while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
       if (bytes_read < ARCHIVE_WARN) {
-        archive_read_close(a);
-        archive_read_free(a);
         return NULL;
       }
 
       void* tmp = g_memdup2(buf, bytes_read);
       if (tmp == NULL) {
-        archive_read_close(a);
-        archive_read_free(a);
         return NULL;
       }
 
@@ -100,17 +91,11 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
 
     g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
     if (pixbuf == NULL) {
-      archive_read_close(a);
-      archive_read_free(a);
       return NULL;
     }
 
-    archive_read_close(a);
-    archive_read_free(a);
     return pixbuf;
   }
 
-  archive_read_close(a);
-  archive_read_free(a);
   return NULL;
 }
