@@ -23,14 +23,13 @@ zathura_error_t cb_page_render_cairo(zathura_page_t* page, void* data, cairo_t* 
     return ZATHURA_ERROR_UNKNOWN;
   }
 
-  GdkPixbuf* pixbuf = load_pixbuf_from_archive(zathura_document_get_path(document), cb_page->file);
+  g_autoptr(GdkPixbuf) pixbuf = load_pixbuf_from_archive(zathura_document_get_path(document), cb_page->file);
   if (pixbuf == NULL) {
     return ZATHURA_ERROR_UNKNOWN;
   }
 
   gdk_cairo_set_source_pixbuf(cairo, pixbuf, 0, 0);
   cairo_paint(cairo);
-  g_object_unref(pixbuf);
 
   return ZATHURA_ERROR_OK;
 }
@@ -68,7 +67,7 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
         continue;
       }
 
-      GInputStream* is = g_memory_input_stream_new();
+      g_autoptr(GInputStream) is = g_memory_input_stream_new();
       if (is == NULL) {
         archive_read_close(a);
         archive_read_free(a);
@@ -83,7 +82,6 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
         if (r < ARCHIVE_WARN) {
           archive_read_close(a);
           archive_read_free(a);
-          g_object_unref(mis);
           return NULL;
         }
 
@@ -95,7 +93,6 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
         if (tmp == NULL) {
           archive_read_close(a);
           archive_read_free(a);
-          g_object_unref(mis);
           return NULL;
         }
 
@@ -103,17 +100,15 @@ static GdkPixbuf* load_pixbuf_from_archive(const char* archive, const char* file
         g_memory_input_stream_add_data(mis, tmp, size, g_free);
       }
 
-      GdkPixbuf* pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
+      g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
       if (pixbuf == NULL) {
         archive_read_close(a);
         archive_read_free(a);
-        g_object_unref(mis);
         return NULL;
       }
 
       archive_read_close(a);
       archive_read_free(a);
-      g_object_unref(mis);
       return pixbuf;
     }
 
