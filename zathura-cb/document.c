@@ -163,7 +163,9 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         uint8_t buf[BUFFER_SIZE];
         la_ssize_t bytes_read;
         while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
-          if (bytes_read < ARCHIVE_WARN) {
+          if (bytes_read == ARCHIVE_RETRY) {
+            continue;
+          } else if (bytes_read < 0) {
             break;
           }
 
