@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
-#include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <girara/datastructures.h>
 #include <archive.h>

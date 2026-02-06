@@ -3,7 +3,6 @@
 #include <gio/gio.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include <gtk/gtk.h>
 #include <string.h>
 
 #include "plugin.h"

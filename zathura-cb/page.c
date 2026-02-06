@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
 
 #include <glib.h>
-#include <gtk/gtk.h>
 
 #include "plugin.h"
 #include "internal.h"
