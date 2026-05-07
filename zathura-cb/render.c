@@ -57,7 +57,10 @@ static GdkPixbuf* load_pixbuf_from_archive(zathura_page_t* page, const char* arc
     uint8_t buf[LIBARCHIVE_BUFFER_SIZE];
     la_ssize_t bytes_read;
     while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
-      if (bytes_read < ARCHIVE_WARN) {
+      if (bytes_read == ARCHIVE_RETRY) {
+        continue;
+      }
+      if (bytes_read < 0) {
         return NULL;
       }
 
@@ -69,7 +72,10 @@ static GdkPixbuf* load_pixbuf_from_archive(zathura_page_t* page, const char* arc
       g_memory_input_stream_add_data(mis, tmp, bytes_read, g_free);
     }
 
-    GdkPixbuf* pixbuf     = gdk_pixbuf_new_from_stream(is, NULL, NULL);
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_stream(is, NULL, NULL);
+    if (pixbuf == NULL) {
+      return NULL;
+    }
     internal_page->pixbuf = g_object_ref(pixbuf);
     return pixbuf;
   }
