@@ -36,7 +36,6 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
   if (document == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
-  cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* archive path */
   const char* path = zathura_document_get_path(document);
@@ -58,6 +57,8 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
 
     g_strfreev(extensions);
   }
+
+  cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* create list of supported files (pages) */
   cb_document->pages = girara_sorted_list_new_with_free(compare_pages, cb_document_page_meta_free);
@@ -192,7 +193,10 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
 }
 
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions) {
-  g_autoptr(GDir) dir   = g_dir_open(directory, 0, NULL);
+  g_autoptr(GDir) dir = g_dir_open(directory, 0, NULL);
+  if (dir == NULL) {
+    return false;
+  }
   const char* entrypath = NULL;
   while ((entrypath = g_dir_read_name(dir))) {
     g_autofree char* fullpath  = g_strdup_printf("%s/%s", directory, entrypath);
