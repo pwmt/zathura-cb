@@ -11,6 +11,7 @@ struct cb_document_s {
 
 struct cb_page_s {
   char* file; /**< Image associated to the page */
+  GdkPixbuf* pixbuf;
 };
 
 /** Image meta-data read during the document initialization

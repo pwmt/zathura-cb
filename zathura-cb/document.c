@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
-#include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <girara/datastructures.h>
 #include <archive.h>
@@ -14,28 +13,40 @@
 #include "internal.h"
 #include "utils.h"
 
-static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2);
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions);
 static char* get_extension(const char* path);
-static void cb_document_page_meta_free(cb_document_page_meta_t* meta);
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions);
+
+static void cb_document_page_meta_free(void* data) {
+  if (data != NULL) {
+    cb_document_page_meta_t* meta = data;
+    g_free(meta->file);
+    g_free(meta);
+  }
+}
+
+static int compare_pages(const void* p1, const void* p2) {
+  const cb_document_page_meta_t* page1 = p1;
+  const cb_document_page_meta_t* page2 = p2;
+
+  return compare_path(page1->file, page2->file);
+}
 
 zathura_error_t cb_document_open(zathura_document_t* document) {
   if (document == NULL) {
     return ZATHURA_ERROR_INVALID_ARGUMENTS;
   }
-  cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* archive path */
   const char* path = zathura_document_get_path(document);
 
   /* create list of supported formats */
-  girara_list_t* supported_extensions = girara_list_new_with_free(g_free);
+  g_autoptr(girara_list_t) supported_extensions = girara_list_new_with_free(g_free);
   if (supported_extensions == NULL) {
-    goto error_free;
+    return ZATHURA_ERROR_UNKNOWN;
   }
 
-  GSList* formats = gdk_pixbuf_get_formats();
+  g_autoptr(GSList) formats = gdk_pixbuf_get_formats();
   for (GSList* list = formats; list != NULL; list = list->next) {
     GdkPixbufFormat* format = (GdkPixbufFormat*)list->data;
     char** extensions       = gdk_pixbuf_format_get_extensions(format);
@@ -46,11 +57,11 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
 
     g_strfreev(extensions);
   }
-  g_slist_free(formats);
+
+  cb_document_t* cb_document = g_malloc0(sizeof(cb_document_t));
 
   /* create list of supported files (pages) */
-  cb_document->pages = girara_sorted_list_new_with_free((girara_compare_function_t)compare_pages,
-                                                        (girara_free_function_t)cb_document_page_meta_free);
+  cb_document->pages = girara_sorted_list_new_with_free(compare_pages, cb_document_page_meta_free);
   if (cb_document->pages == NULL) {
     goto error_free;
   }
@@ -66,8 +77,6 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
     }
   }
 
-  girara_list_free(supported_extensions);
-
   /* set document information */
   zathura_document_set_number_of_pages(document, girara_list_size(cb_document->pages));
   zathura_document_set_data(document, cb_document);
@@ -76,7 +85,6 @@ zathura_error_t cb_document_open(zathura_document_t* document) {
 
 error_free:
 
-  girara_list_free(supported_extensions);
   cb_document_free(document, cb_document);
 
   return ZATHURA_ERROR_UNKNOWN;
@@ -98,17 +106,6 @@ zathura_error_t cb_document_free(zathura_document_t* UNUSED(document), void* dat
   return ZATHURA_ERROR_OK;
 }
 
-static void cb_document_page_meta_free(cb_document_page_meta_t* meta) {
-  if (meta == NULL) {
-    return;
-  }
-
-  if (meta->file != NULL) {
-    g_free(meta->file);
-  }
-  g_free(meta);
-}
-
 static void get_pixbuf_size(GdkPixbufLoader* loader, int width, int height, gpointer data) {
   cb_document_page_meta_t* meta = (cb_document_page_meta_t*)data;
 
@@ -119,7 +116,7 @@ static void get_pixbuf_size(GdkPixbufLoader* loader, int width, int height, gpoi
 }
 
 static bool read_archive(cb_document_t* cb_document, const char* archive, girara_list_t* supported_extensions) {
-  struct archive* a = archive_read_new();
+  g_autoptr(archive_t) a = archive_read_new();
   if (a == NULL) {
     return false;
   }
@@ -128,7 +125,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
   archive_read_support_format_all(a);
   int r = archive_read_open_filename(a, archive, (size_t)LIBARCHIVE_BUFFER_SIZE);
   if (r != ARCHIVE_OK) {
-    archive_read_free(a);
     return false;
   }
 
@@ -136,9 +132,9 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
   while ((r = archive_read_next_header(a, &entry)) != ARCHIVE_EOF) {
     if (r < ARCHIVE_WARN) {
       // let's ignore warnings ... they are non-fatal errors
-      archive_read_close(a);
-      archive_read_free(a);
       return false;
+    } else if (r == ARCHIVE_RETRY) {
+      continue;
     }
 
     if (archive_entry_filetype(entry) != AE_IFREG) {
@@ -146,8 +142,8 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
       continue;
     }
 
-    const char* path = archive_entry_pathname(entry);
-    char* extension  = get_extension(path);
+    const char* path           = archive_entry_pathname(entry);
+    g_autofree char* extension = get_extension(path);
 
     if (extension == NULL) {
       continue;
@@ -159,22 +155,19 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         cb_document_page_meta_t* meta = g_malloc0(sizeof(cb_document_page_meta_t));
         meta->file                    = g_strdup(path);
 
-        GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+        g_autoptr(GdkPixbufLoader) loader = gdk_pixbuf_loader_new();
         g_signal_connect(loader, "size-prepared", G_CALLBACK(get_pixbuf_size), meta);
 
-        size_t size         = 0;
-        const void* buf     = NULL;
-        __LA_INT64_T offset = 0;
-        while ((r = archive_read_data_block(a, &buf, &size, &offset)) != ARCHIVE_EOF) {
-          if (r < ARCHIVE_WARN) {
+        uint8_t buf[LIBARCHIVE_BUFFER_SIZE];
+        la_ssize_t bytes_read;
+        while ((bytes_read = archive_read_data(a, buf, sizeof(buf))) != 0) {
+          if (bytes_read == ARCHIVE_RETRY) {
+            continue;
+          } else if (bytes_read < 0) {
             break;
           }
 
-          if (buf == NULL || size <= 0) {
-            continue;
-          }
-
-          if (gdk_pixbuf_loader_write(loader, buf, size, NULL) == false) {
+          if (gdk_pixbuf_loader_write(loader, buf, bytes_read, NULL) == false) {
             break;
           }
 
@@ -184,7 +177,6 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         }
 
         gdk_pixbuf_loader_close(loader, NULL);
-        g_object_unref(loader);
 
         if (meta->width > 0 && meta->height > 0) {
           girara_list_append(cb_document->pages, meta);
@@ -195,21 +187,20 @@ static bool read_archive(cb_document_t* cb_document, const char* archive, girara
         break;
       }
     }
-
-    g_free(extension);
   }
 
-  archive_read_close(a);
-  archive_read_free(a);
   return true;
 }
 
 static bool read_dir(cb_document_t* cb_document, const char* directory, girara_list_t* supported_extensions) {
-  GDir* dir             = g_dir_open(directory, 0, NULL);
+  g_autoptr(GDir) dir = g_dir_open(directory, 0, NULL);
+  if (dir == NULL) {
+    return false;
+  }
   const char* entrypath = NULL;
   while ((entrypath = g_dir_read_name(dir))) {
-    char* fullpath  = g_strdup_printf("%s/%s", directory, entrypath);
-    char* extension = get_extension(fullpath);
+    g_autofree char* fullpath  = g_strdup_printf("%s/%s", directory, entrypath);
+    g_autofree char* extension = get_extension(fullpath);
     if (extension == NULL) {
       continue;
     }
@@ -219,10 +210,10 @@ static bool read_dir(cb_document_t* cb_document, const char* directory, girara_l
       if (g_strcmp0(ext, extension) == 0) {
         cb_document_page_meta_t* meta = g_malloc(sizeof(cb_document_page_meta_t));
         meta->file                    = g_strdup(fullpath);
-        g_free(fullpath);
-        GdkPixbuf* data = gdk_pixbuf_new_from_file(meta->file, NULL);
-        meta->width     = gdk_pixbuf_get_width(data);
-        meta->height    = gdk_pixbuf_get_height(data);
+
+        g_autoptr(GdkPixbuf) data = gdk_pixbuf_new_from_file(meta->file, NULL);
+        meta->width               = gdk_pixbuf_get_width(data);
+        meta->height              = gdk_pixbuf_get_height(data);
 
         if (meta->width > 0 && meta->height > 0) {
           girara_list_append(cb_document->pages, meta);
@@ -233,15 +224,8 @@ static bool read_dir(cb_document_t* cb_document, const char* directory, girara_l
         break;
       }
     }
-
-    g_free(extension);
   }
-  g_dir_close(dir);
   return true;
-}
-
-static int compare_pages(const cb_document_page_meta_t* page1, const cb_document_page_meta_t* page2) {
-  return compare_path(page1->file, page2->file);
 }
 
 static char* get_extension(const char* path) {

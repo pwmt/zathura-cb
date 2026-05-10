@@ -7,7 +7,7 @@ Requirements
 ------------
 
 * `zathura` (>= 2026.01.30)
-* `libarchive`
+* `libarchive` (>= 3)
 * `girara`
 * `cairo`
 
