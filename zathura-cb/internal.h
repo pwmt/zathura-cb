@@ -5,6 +5,8 @@
 
 #define LIBARCHIVE_BUFFER_SIZE 8192
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+
 struct cb_document_s {
   girara_list_t* pages; /**< List of metadata structs */
 };
