@@ -30,9 +30,9 @@ endif
 
 # defines
 defines = [
-  '-DVERSION_MAJOR=@0@'.format(version_array[0]),
-  '-DVERSION_MINOR=@0@'.format(version_array[1]),
-  '-DVERSION_REV=@0@'.format(version_array[2]),
+  '-DVERSION_MAJOR=@0@'.format(version_array[0].to_int()),
+  '-DVERSION_MINOR=@0@'.format(version_array[1].to_int()),
+  '-DVERSION_REV=@0@'.format(version_array[2].to_int()),
   '-D_DEFAULT_SOURCE',
 ]
 
