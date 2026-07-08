@@ -15,11 +15,11 @@ metainfodir = join_paths(datadir, 'metainfo')
 # required dependencies
 zathura = dependency('zathura', version: '>=2026.01.30')
 girara = dependency('girara')
-glib = dependency('glib-2.0')
+gtk4 = dependency('gtk4')
 cairo = dependency('cairo')
 libarchive = dependency('libarchive', version: '>=3')
 
-build_dependencies = [zathura, girara, glib, cairo, libarchive]
+build_dependencies = [zathura, girara, gtk4, cairo, libarchive]
 
 if get_option('plugindir') == ''
   plugindir = zathura.get_variable(pkgconfig: 'plugindir')
