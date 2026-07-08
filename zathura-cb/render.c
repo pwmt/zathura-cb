@@ -1,8 +1,9 @@
 /* SPDX-License-Identifier: Zlib */
 
-#include <gio/gio.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <gdk/gdk.h>
+#include <gio/gio.h>
 #include <string.h>
 
 #include "plugin.h"
