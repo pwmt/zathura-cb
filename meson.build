@@ -5,7 +5,6 @@ project('zathura-cb', 'c',
 )
 
 version = meson.project_version()
-version_array = version.split('.')
 
 cc = meson.get_compiler('c')
 
@@ -30,9 +29,7 @@ endif
 
 # defines
 defines = [
-  '-DVERSION_MAJOR=@0@'.format(version_array[0].to_int()),
-  '-DVERSION_MINOR=@0@'.format(version_array[1].to_int()),
-  '-DVERSION_REV=@0@'.format(version_array[2].to_int()),
+  '-DVERSION="@0@"'.format(version),
   '-D_DEFAULT_SOURCE',
 ]
 

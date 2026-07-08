@@ -2,7 +2,7 @@
 
 #include "plugin.h"
 
-ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS("cb", VERSION_MAJOR, VERSION_MINOR, VERSION_REV,
+ZATHURA_PLUGIN_REGISTER_WITH_FUNCTIONS("cb", VERSION,
                                        ZATHURA_PLUGIN_FUNCTIONS({
                                            .document_open           = cb_document_open,
                                            .document_free           = cb_document_free,
