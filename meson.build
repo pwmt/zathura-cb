@@ -1,11 +1,10 @@
 project('zathura-cb', 'c',
-  version: '2026.07.08',
+  version: '2026.07.18',
   meson_version: '>=0.61',
   default_options: ['c_std=c23', 'warning_level=3']
 )
 
 version = meson.project_version()
-version_array = version.split('.')
 
 cc = meson.get_compiler('c')
 
@@ -14,13 +13,13 @@ desktopdir = join_paths(datadir, 'applications')
 metainfodir = join_paths(datadir, 'metainfo')
 
 # required dependencies
-zathura = dependency('zathura', version: '>=2026.01.30')
+zathura = dependency('zathura', version: '>=2026.07.18')
 girara = dependency('girara')
-glib = dependency('glib-2.0')
+gtk4 = dependency('gtk4')
 cairo = dependency('cairo')
 libarchive = dependency('libarchive', version: '>=3')
 
-build_dependencies = [zathura, girara, glib, cairo, libarchive]
+build_dependencies = [zathura, girara, gtk4, cairo, libarchive]
 
 if get_option('plugindir') == ''
   plugindir = zathura.get_variable(pkgconfig: 'plugindir')
@@ -30,9 +29,7 @@ endif
 
 # defines
 defines = [
-  '-DVERSION_MAJOR=@0@'.format(version_array[0]),
-  '-DVERSION_MINOR=@0@'.format(version_array[1]),
-  '-DVERSION_REV=@0@'.format(version_array[2]),
+  '-DVERSION="@0@"'.format(version),
   '-D_DEFAULT_SOURCE',
 ]
 
