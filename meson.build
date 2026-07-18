@@ -1,5 +1,5 @@
 project('zathura-cb', 'c',
-  version: '2026.07.08',
+  version: '2026.07.18',
   meson_version: '>=0.61',
   default_options: ['c_std=c23', 'warning_level=3']
 )
@@ -13,7 +13,7 @@ desktopdir = join_paths(datadir, 'applications')
 metainfodir = join_paths(datadir, 'metainfo')
 
 # required dependencies
-zathura = dependency('zathura', version: '>=2026.01.30')
+zathura = dependency('zathura', version: '>=2026.07.18')
 girara = dependency('girara')
 gtk4 = dependency('gtk4')
 cairo = dependency('cairo')
